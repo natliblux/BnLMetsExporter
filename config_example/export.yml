@@ -1,0 +1,178 @@
+metsType:
+  newspaper:
+    - type: ISSUE
+      panel: pi
+      isArticle: false
+    
+    - type: ARTICLE
+      
+    - type: SECTION
+    
+    - type: DEATH_NOTICE
+      title: Avis mortuaire
+    
+    - type: DEATH_NOTICE_SECTION
+      title: Avis mortuaires
+      export: false
+    
+    - type: WEATHER
+      title: Météo
+      
+    - type: ADVERTISEMENT
+      title: Publicité
+      
+    - type: ADVERTISEMENT_SECTION
+      title: Publicités
+      
+    - type: ILLUSTRATION
+      title: Illustration
+
+    - type: TABLE
+      title: Tableau
+      export: false
+
+    - type: SUPPLEMENT
+      title: Supplément
+      
+    - type: SHIPPING
+      title: Transport maritime
+      
+  serial:
+    - type: ISSUE
+      panel: pi
+      isArticle: false
+    
+    - type: CHAPTER
+      title: Chapitre
+    
+    - type: CONTRIBUTION
+      preferdmd: marc
+
+    - type: REVIEW
+      title: Compte Rendu
+      
+    - type: ILLUSTRATION
+      title: Illustration
+      
+    - type: ILLUSTRATION_GROUP
+      title: Illustration
+      
+    - type: Map
+      title: Carte
+      
+    - type: MAP_GROUP
+      title: Carte
+      
+    - type: ADVERTISEMENT
+      title: Publicité
+      
+    - type: ADVERTISEMENT_SECTION
+      title: Publicités
+      export: false
+      
+    - type: TITLE_SECTION
+      title: Section titre  
+      
+    - type: TABLE_OF_CONTENTS
+      title: Table des matières 
+      
+    - type: APPENDIX
+      title: Annexe
+      
+    - type: TABLE
+      title: Tableau
+      
+    - type: TABLE_GROUP
+      title: Tableau
+    
+    - type: CHART_DIAGRAM
+      title: Diagramme
+    
+    - type: CHART_DIAGRAM_GROUP
+      title: Diagramme
+      
+    - type: BIBLIOGRAPHY
+      title: Bibliographie
+      
+    - type: INDEX
+      title: Index
+    
+  monograph:
+    - type: VOLUME
+      title: Article
+      
+    - type: COVER_SECTION
+    
+    - type: INDEX
+      title: Index
+      
+    - type: PREFACE
+      title: Préface
+      
+    - type: TABLE_OF_CONTENTS
+      title: Table des matières
+    
+    - type: BIBLIOGRAPHY
+      title: Bibliographie
+    
+    - type: ADVERTISEMENT
+      title: Publicité
+      
+    - type: CORRECTIONS
+      title: Corrections
+      
+    - type: APPENDIX
+      title: Annexe
+      
+    - type: MAP
+      title: Carte
+      
+    - type: ILLUSTRATION
+      title: Illustration
+      
+    - type: CHAPTER
+      title: Chapitre
+      
+  manuscript:
+    - type: ARTICLE
+      panel: pp
+      isArticle: true
+      
+    - type: ISSUE
+      panel: pi
+      isArticle: false
+      
+    - type: SECTION
+      
+  poster:
+    - type: SHIPPING
+      title: Transport maritime
+      isArticle: false
+      
+    - type: IMPRINT
+      isArticle: false
+
+getMetsURL: "http://my-server.com/getMetsXml"
+viewerHostBaseURL: "http://www.my-viewer-website.com"
+
+exportDublinCore:
+  - newspaper
+  - serial
+  
+exportSolr:
+  - newspaper
+  - serial
+  - monograph
+
+primo:
+  oaiHostURL: "http://www.my-viewer-website.com/OAI"
+  recordIdentifier: my-identifier
+  hasVersionPattern: "{{host}}/my-service?issue={{pid}}&article={{id}}&panel={{panel}}"
+
+solr:
+  zkHost: zk-host-1:2181,zk-host-2:2181,zk-host-3:2181
+  articleURL: "http://my-solr-server.com:8983/solr/my_articles"
+  articleCollection: my_articles
+  
+  pageURL: "http://my-solr-server.com:8983/solr/my_pages"
+  pageCollection: my_pages
