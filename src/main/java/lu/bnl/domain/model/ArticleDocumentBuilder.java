@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2017-2018 Bibliotèque nationale de Luxembourg (BnL)
+ * Copyright (C) 2017-2018 Bibliothèque nationale de Luxembourg (BnL)
  *
  * This file is part of BnLMetsExporter.
  *
@@ -21,6 +21,8 @@ package lu.bnl.domain.model;
 import java.util.List;
 
 public class ArticleDocumentBuilder {
+	private String ark;
+	
 	private String id;
 	private String pid;
 	private String dmdId;
@@ -50,6 +52,11 @@ public class ArticleDocumentBuilder {
 	public ArticleDocumentBuilder(String id, String pid) {
 		this.id = id;
 		this.pid = pid;
+	}
+	
+	public ArticleDocumentBuilder ark(String ark) {
+		this.ark = ark;
+		return this;
 	}
 	
 	public ArticleDocumentBuilder dmdId(String dmdId) {
@@ -129,6 +136,10 @@ public class ArticleDocumentBuilder {
 	//================================================================================
 	//================================================================================
 		
+	public String getArk() {
+		return ark;
+	}
+	
 	public String getId() {
 		return id;
 	}
