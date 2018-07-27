@@ -28,4 +28,8 @@ public class RemoteIdentifierConfig {
 	 */
 	public String url;
 	
+	/** The name of the class, including package, that will be used as a RemoteIdentifierManager
+	 */
+	public String clazz;
+	
 }

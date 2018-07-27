@@ -163,6 +163,7 @@ public class ExportConfig {
 		if (this.remoteIdentifier != null) {
 			stringBuilder.append( String.format(" - Enable : %s\n", Boolean.toString(this.remoteIdentifier.enable)) );
 			stringBuilder.append( String.format(" - URL    : %s\n", Optional.ofNullable(this.remoteIdentifier.url).orElse(notset)) );
+			stringBuilder.append( String.format(" - Class  : %s\n", Optional.ofNullable(this.remoteIdentifier.clazz).orElse(notset)) );
 		}
 		
 		stringBuilder.append( String.format("- Viewer Host Base URL:\n   %s\n", Optional.ofNullable(this.viewerHostBaseURL).orElse(notset) ));
