@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2017-2018 Bibliotèque nationale de Luxembourg (BnL)
+ * Copyright (C) 2017-2018 Bibliothèque nationale de Luxembourg (BnL)
  *
  * This file is part of BnLMetsExporter.
  *
@@ -32,10 +32,10 @@ import lu.bnl.domain.constants.MetsConstant;
 import lu.bnl.domain.constants.MetsTypeHandler;
 import lu.bnl.domain.managers.ExecutionTimeTracker;
 import lu.bnl.domain.managers.StatisticsManager;
+import lu.bnl.domain.managers.remote.RemoteIdentifierManager;
 import lu.bnl.domain.model.ArticleDocumentBuilder;
 import lu.bnl.domain.model.DivSection;
 import lu.bnl.domain.model.DmdSection;
-import lu.bnl.domain.model.PidContent;
 import lu.bnl.reader.MetsGetter;
 import lu.bnl.xml.MetsXMLParserHandler;
 
@@ -110,9 +110,11 @@ public abstract class ExportManager {
 		String type 	= article.getType();
 		
 		String lineText = article.getTextInLineFormat();
-		String wordText = article.getHtmlizedWords(true);
+		String wordText = article.getHtmlizedWords(true);	
 		
 		// Define variables
+		
+		String ark				= null;
 		String title 			= null;
 		String publisher 		= null;
 		String recordIdentifier = null;
@@ -121,6 +123,18 @@ public abstract class ExportManager {
 		List<String> isPartOfs = new ArrayList<>();
 		List<String> creators  = new ArrayList<>();
 		List<String> languages = new ArrayList<>(); 
+		
+		// Get ARK via the RemoteIdentifierManager
+		try {
+			RemoteIdentifierManager remoteIdentifierManager = RemoteIdentifierManager.getInstanceForConfig();
+			// Can be null if something went wrong or if enable = false
+			if (remoteIdentifierManager != null) {
+				ark = remoteIdentifierManager.getIdByPID(pid, article);
+			}
+		} catch (Exception e) {
+			logger.error("Error during RemoteIdentifierManager.", e);
+		}
+		//System.out.println("ARK: " + ark); // Debug
 		
 		// Step 0 - Gather handlers, preferences and dmdSec objects
 		// ################################################################################
@@ -253,6 +267,7 @@ public abstract class ExportManager {
 		}
 		
 		ArticleDocumentBuilder builder = new ArticleDocumentBuilder(id, pid)
+				.ark(ark)
 				.dmdId(dmdid)
 				.recordIdentifier(recordIdentifier)
 				.date(date)

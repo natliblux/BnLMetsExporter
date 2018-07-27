@@ -153,6 +153,12 @@ metsType:
       isArticle: false
 
 getMetsURL: "http://my-server.com/getMetsXml"
+
+remoteIdentifier:
+    enable: false
+    url: "http://my-server.com/getRemoteId"
+    clazz: "lu.bnl.domain.managers.remote.BnLRemoteIdentifierManager"
+
 viewerHostBaseURL: "http://www.my-viewer-website.com"
 
 exportDublinCore:

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2017-2018 Bibliotèque nationale de Luxembourg (BnL)
+ * Copyright (C) 2017-2018 Bibliothèque nationale de Luxembourg (BnL)
  *
  * This file is part of BnLMetsExporter.
  *
@@ -53,9 +53,12 @@ public class DublinCoreDocument {
     final String schemaLocation = "http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd";
 
 	@XStreamOmitField
-	private String host = "http://www.my-server.com"; // This will be overwritten
+	private String host = "http://www.my-server.com"; // This will be overwritten in the constructor
 
 	//================================================================================
+	
+	@XStreamAlias("dc:identifier")
+	private String identifier;
 	
 	//Example: <dc:source>newspaper/luxwort/1929-11-01</dc:source>
 	@XStreamAlias("dc:source")
@@ -108,6 +111,8 @@ public class DublinCoreDocument {
 
 	public DublinCoreDocument(ArticleDocumentBuilder builder) {
 		this.host = AppConfigurationManager.getInstance().getExportConfig().viewerHostBaseURL;
+		
+		this.identifier = builder.getArk();
 		
 		this.source = builder.getRecordIdentifier();
 		

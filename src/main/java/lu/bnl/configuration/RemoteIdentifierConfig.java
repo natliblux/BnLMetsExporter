@@ -16,34 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with BnLMetsExporter.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package lu.bnl.io;
+package lu.bnl.configuration;
 
-import java.io.IOException;
+public class RemoteIdentifierConfig {
 
-import lu.bnl.domain.model.PrimoDocument;
-
-public interface Archiver {
-
-	/**
-	 * Opens and prepares the archive file.
-	 * 
-	 * @throws IOException
+	/** Enable or disable the usage of remote
 	 */
-	public void open() throws IOException;
+	public boolean enable = false;
 	
-	/**
-	 * Write a PrimoDocument to the archive as an XML file.
-	 * 
-	 * @param primoDocument The PrimoDocument to save to the archive.
-	 * @throws IOException
+	/** The url to request the remote ID.
 	 */
-	public void write(PrimoDocument primoDocument, ArchiverFilenameStrategy archiverFilenameStrategy) throws IOException;
+	public String url;
 	
-	/**
-	 * Closes all archive files.
-	 * 
-	 * @throws IOException
+	/** The name of the class, including package, that will be used as a RemoteIdentifierManager
 	 */
-	public void close() throws IOException;
+	public String clazz;
 	
 }

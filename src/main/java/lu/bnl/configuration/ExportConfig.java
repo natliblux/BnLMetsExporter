@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2017-2018 Bibliotèque nationale de Luxembourg (BnL)
+ * Copyright (C) 2017-2018 Bibliothèque nationale de Luxembourg (BnL)
  *
  * This file is part of BnLMetsExporter.
  *
@@ -43,6 +43,11 @@ public class ExportConfig {
 	/** Defines the URL to request METS files.
 	 */
 	public String getMetsURL;
+	
+	/** Defines the URL to request the Identifier based on another id. 
+	 *  (Used by the BnL to convert PIDs to ARKs identifiers during a transition phase)
+	 */
+	public RemoteIdentifierConfig remoteIdentifier;
 	
 	/** Defines the URL to link back to the Viewer (for Primo Export).
 	 */
@@ -153,6 +158,13 @@ public class ExportConfig {
 		}
 		
 		stringBuilder.append( String.format("- Get METS URL:\n   %s\n", Optional.ofNullable(this.getMetsURL).orElse(notset) ));
+		
+		stringBuilder.append("- Remote Identifier:\n");
+		if (this.remoteIdentifier != null) {
+			stringBuilder.append( String.format(" - Enable : %s\n", Boolean.toString(this.remoteIdentifier.enable)) );
+			stringBuilder.append( String.format(" - URL    : %s\n", Optional.ofNullable(this.remoteIdentifier.url).orElse(notset)) );
+			stringBuilder.append( String.format(" - Class  : %s\n", Optional.ofNullable(this.remoteIdentifier.clazz).orElse(notset)) );
+		}
 		
 		stringBuilder.append( String.format("- Viewer Host Base URL:\n   %s\n", Optional.ofNullable(this.viewerHostBaseURL).orElse(notset) ));
 		
