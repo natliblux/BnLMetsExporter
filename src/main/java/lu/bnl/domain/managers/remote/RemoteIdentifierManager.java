@@ -56,7 +56,7 @@ public abstract class RemoteIdentifierManager {
 	 * that is a subclass of RemoteIdentifierManager. This allows that the RemoteIdentifierManager
 	 * is configurable and reduces the amount of code that has to change.
 	 * 
-	 * @return
+	 * @return A new instance of a RemoteIdentifierManager, null otherwise.
 	 * @throws Exception
 	 */
 	public static RemoteIdentifierManager getInstanceForConfig() throws Exception {
