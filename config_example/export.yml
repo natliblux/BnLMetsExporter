@@ -153,6 +153,11 @@ metsType:
       isArticle: false
 
 getMetsURL: "http://my-server.com/getMetsXml"
+
+remoteIdentifier:
+    enable: true
+    url: "http://my-server.com/getRemoteId"
+
 viewerHostBaseURL: "http://www.my-viewer-website.com"
 
 exportDublinCore:
