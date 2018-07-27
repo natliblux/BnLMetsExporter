@@ -159,6 +159,12 @@ public class ExportConfig {
 		
 		stringBuilder.append( String.format("- Get METS URL:\n   %s\n", Optional.ofNullable(this.getMetsURL).orElse(notset) ));
 		
+		stringBuilder.append("- Remote Identifier:\n");
+		if (this.remoteIdentifier != null) {
+			stringBuilder.append( String.format(" - Enable : %s\n", Boolean.toString(this.remoteIdentifier.enable)) );
+			stringBuilder.append( String.format(" - URL    : %s\n", Optional.ofNullable(this.remoteIdentifier.url).orElse(notset)) );
+		}
+		
 		stringBuilder.append( String.format("- Viewer Host Base URL:\n   %s\n", Optional.ofNullable(this.viewerHostBaseURL).orElse(notset) ));
 		
 		stringBuilder.append("- Export Dublin Core:\n");
