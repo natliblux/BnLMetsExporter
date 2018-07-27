@@ -134,7 +134,7 @@ public abstract class ExportManager {
 		} catch (Exception e) {
 			logger.error("Error during RemoteIdentifierManager.", e);
 		}
-		System.out.println("ARK: " + ark);
+		//System.out.println("ARK: " + ark); // Debug
 		
 		// Step 0 - Gather handlers, preferences and dmdSec objects
 		// ################################################################################

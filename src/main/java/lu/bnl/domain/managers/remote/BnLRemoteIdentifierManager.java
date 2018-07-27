@@ -108,18 +108,21 @@ public class BnLRemoteIdentifierManager extends RemoteIdentifierManager {
 		return this.extractArkFromResponse(result);
 	}
 	
+	/** Converts the String response to a Java Object using the GSON library in order
+	 *  to extract the ARK value.
+	 * 
+	 * @param response
+	 * @return
+	 */
 	private String extractArkFromResponse(String response) {
 		if (response != null) {
-			
-			ResponseMessage responseMessage = new Gson().fromJson(response, ResponseMessage.class);
-			
 			try {
+				ResponseMessage responseMessage = new Gson().fromJson(response, ResponseMessage.class);
 				return responseMessage.data.ark;
 			} catch (Exception e) {
 				logger.error("Error during extraction of ARK from Response. Response:" + response);
 			}
-					
-		} 
+		}
 		
 		return response;
 	}
