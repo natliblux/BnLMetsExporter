@@ -204,5 +204,15 @@ public class ArticleDocumentBuilder {
 		return panel;
 	}
 	
+	// Special and Computed
+	
+	public int getWordCount() {
+		if (this.text == null) {
+			return 0;
+		}
+		
+		String[] words = this.text.split("\\s+"); // Split by >=1 spaces
+		return words.length;
+	}
 	
 }

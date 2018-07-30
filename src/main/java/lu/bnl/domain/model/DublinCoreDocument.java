@@ -57,6 +57,7 @@ public class DublinCoreDocument {
 
 	//================================================================================
 	
+	// Example: <dc:identifier>ark:/naan/objectid/qualifier</dc:identifier>
 	@XStreamAlias("dc:identifier")
 	private String identifier;
 	
@@ -108,6 +109,10 @@ public class DublinCoreDocument {
 	@XStreamImplicit(itemFieldName="dc:language")
 	private List<String> languages;
 	
+	// The size or duration of the resource.
+	// Example: <dcterms:extent>1242</dcterms:extent>
+	@XStreamAlias("dcterms:extent")
+	private int extent;
 
 	public DublinCoreDocument(ArticleDocumentBuilder builder) {
 		this.host = AppConfigurationManager.getInstance().getExportConfig().viewerHostBaseURL;
@@ -137,6 +142,8 @@ public class DublinCoreDocument {
 		this.languages = builder.getLanguages();
 		
 		this.type = builder.getType();
+		
+		this.extent = builder.getWordCount();
 	}
 	
 	//================================================================================
