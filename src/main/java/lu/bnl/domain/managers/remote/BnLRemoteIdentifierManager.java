@@ -57,6 +57,11 @@ public class BnLRemoteIdentifierManager extends RemoteIdentifierManager {
 		// 1) Get ARK
 		String ark = this.getArkForPid(pid);
 		
+		// To not continue if ARK is null.
+		if (ark == null) {
+			return null;
+		}
+		
 		// 2) Add Qualifier
 		if (article.getType().equalsIgnoreCase("ISSUE") || article.getType().equalsIgnoreCase("VOLUME")) {
 			// Issue/Volume level
