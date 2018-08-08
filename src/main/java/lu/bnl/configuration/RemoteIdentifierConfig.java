@@ -31,5 +31,11 @@ public class RemoteIdentifierConfig {
 	/** The name of the class, including package, that will be used as a RemoteIdentifierManager
 	 */
 	public String clazz;
+
+	/** The prefix to put in front of the identifier.
+	 *  This can be any string and most often will be a URL.
+	 *  Remove or leave as empty string if you don't want to use this.
+	 */
+	public String prefix;
 	
 }
