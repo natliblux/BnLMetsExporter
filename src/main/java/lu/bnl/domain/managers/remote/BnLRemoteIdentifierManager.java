@@ -60,6 +60,8 @@ public class BnLRemoteIdentifierManager extends RemoteIdentifierManager {
 		// To not continue if ARK is null.
 		if (ark == null) {
 			return null;
+		} else {
+			ark = this.getPrefixFromConfig() + ark;
 		}
 		
 		// 2) Add Qualifier
