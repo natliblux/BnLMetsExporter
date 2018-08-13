@@ -132,6 +132,19 @@ public class BnLRemoteIdentifierManager extends RemoteIdentifierManager {
 		return response;
 	}
 	
+	private String getPrefixFromConfig() {
+		RemoteIdentifierConfig ric = AppConfigurationManager.getInstance().getExportConfig().remoteIdentifier;
+		if (ric == null || ric.enable == false) {
+			return "";
+		}
+		
+		if (ric.prefix != null) {
+			return ric.prefix;
+		} else {
+			return "";
+		}
+	}
+	
 	// Custom class to convert JSON to objects
 	
 	private class ResponseMessage {
