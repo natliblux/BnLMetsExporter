@@ -39,6 +39,11 @@ import lu.bnl.domain.model.XmlParserStackElement;
 import lu.bnl.util.LuceneUtils;
 import lu.bnl.util.TextProcessor;
 
+/**
+ * Parse and create full text.
+ * Improve this by just parsing and preparing the data, then
+ * externalize the string management.
+*/
 public class AltoXMLParserHandler extends DefaultHandler {
 	
 	private static final Logger logger = LoggerFactory.getLogger(AltoXMLParserHandler.class);
@@ -94,6 +99,16 @@ public class AltoXMLParserHandler extends DefaultHandler {
 	// Goal: Do not include header of newspapers inside full text, only the articles, etc.
 	//private Boolean inRelevantTextBlock = false;
 	
+	//  Constants
+	//================================================================================
+
+	private static final String SPACE 			= " ";
+
+	private static final String HTML_BLOCK_END 	= "</block>";
+
+	private static final String HTML_BREAK 		= "<br/>";
+
+
 	//================================================================================
 	
 	public AltoXMLParserHandler(String fileid, Map<String, List<String>> articleAltoBlockMap, Map<String, DivSection> articles, boolean useTokenizer) {
@@ -146,11 +161,8 @@ public class AltoXMLParserHandler extends DefaultHandler {
 
 		if (AltoConstant.TAG_TEXTBLOCK.equals(qName) || AltoConstant.TAG_COMPOSEDBLOCK.equals(qName)) {
 			
-			// Add <br/> at the end of TextBlocks so that titles and main paragraphs are spaced. 
-			this.currentArticleTextForLines.append("<br/>");
-			this.pageTextForLines.append("<br/>");
-			
-			stackArticle.pop();
+			this.handleTextBlockEnd(uri, localName, qName);
+
 		}
 		
 		previousSiblingTag = qName;
@@ -179,7 +191,7 @@ public class AltoXMLParserHandler extends DefaultHandler {
 		DivSection article = null;
 		
 		if ( this.articleAltoBlockMap.containsKey(key) ) {
-			List<String> articleIDs = this.articleAltoBlockMap.get(key);
+			List<String> articleIDs = this.articleAltoBlockMap.get(key); // Why is does this return a List?
 			logger.debug("Articles: " + articleIDs.size());
 			for (String s : articleIDs) {
 				logger.debug("ARTICLE ID FROM MAP: " + s + " - KEY: " + key);
@@ -218,8 +230,29 @@ public class AltoXMLParserHandler extends DefaultHandler {
 			
 			//logger.warn("EMPTY DUMMY ARTICLE!");
 		}
+
+		// Add blocks start string
+		String blockHtml = String.format("<block page=\"%s\" begin=\"%s\">", this.fileid, this.currentTextBlockId);
+		this.currentArticleTextForLines.append(blockHtml);
+		this.pageTextForLines.append(blockHtml);
 		
 		stackArticle.add(article);
+	}
+
+	private void handleTextBlockEnd(String uri, String localName, String qName) {
+
+		if (this.currentTextBlockId != null) {
+			this.currentArticleTextForLines.append(HTML_BLOCK_END);
+			this.pageTextForLines.append(HTML_BLOCK_END);	
+		}
+
+		// Add <br/> at the end of TextBlocks so that titles and main paragraphs are spaced. 
+		this.currentArticleTextForLines.append(HTML_BREAK);
+		this.pageTextForLines.append(HTML_BREAK);
+		
+		this.currentTextBlockId = null;
+
+		stackArticle.pop();
 	}
 	
 	/**
@@ -232,10 +265,10 @@ public class AltoXMLParserHandler extends DefaultHandler {
 	 * @param attributes
 	 */
 	private void handleSpace(String uri, String localName, String qName, Attributes attributes) {
-		this.currentArticleText.append(" ");
-		this.currentArticleTextForLines.append(" ");
-		this.pageTextForLines.append(" ");
-		this.currentAltoLine.getBuffer().append(" ");
+		this.currentArticleText.append(SPACE);
+		this.currentArticleTextForLines.append(SPACE);
+		this.pageTextForLines.append(SPACE);
+		this.currentAltoLine.getBuffer().append(SPACE);
 	}
 	
 	/**
@@ -270,10 +303,10 @@ public class AltoXMLParserHandler extends DefaultHandler {
 				&& currentArticleText.charAt(currentArticleText.length() -1) != ' ' 
 				&& this.didFindHyphen == false ) {
 			// Add space at the end of a line (OR the start of a the next, except first)
-			currentArticleText.append(" ");
+			currentArticleText.append(SPACE);
 			
-			this.currentArticleTextForLines.append("<br/>");
-			this.pageTextForLines.append("<br/>");
+			this.currentArticleTextForLines.append(HTML_BREAK);
+			this.pageTextForLines.append(HTML_BREAK);
 		}
 		
 		this.didFindHyphen = false;
@@ -425,6 +458,7 @@ public class AltoXMLParserHandler extends DefaultHandler {
 	}
 	
 	/** Set the class variables for the new current article text and lines.
+	 *  First, load the current text and text lines StringBuilders or create new empty StringBuilders.
 	 * 
 	 * @param article
 	 * @param key
