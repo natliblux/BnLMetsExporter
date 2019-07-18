@@ -124,6 +124,11 @@ public class PrimoExportManager extends ExportManager {
 	
 				// Create Dublin Core Documents
 				for (DivSection article : metsHandler.getArticles().values()) {
+
+					// DEBUG
+					//System.out.println("*************");
+					//System.out.println(article.getTextInLineFormat());
+
 					// DocList is automatically changed.
 					if ( dublinCoreExporter.save(article, pid, metsHandler, docList) ) {
 						// SUCCESS
