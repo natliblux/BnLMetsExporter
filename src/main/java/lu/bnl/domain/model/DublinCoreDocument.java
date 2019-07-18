@@ -150,6 +150,8 @@ public class DublinCoreDocument {
 	// Helper Functions
 	//================================================================================
 	
+	// Is this still needed? Check what should be the value for other document types.
+	
 	private String createIsReferencedBy(ArticleDocumentBuilder builder) {
 		/*return String.format("issue:%s/article:%s-%s", 
 				builder.recordIdentifier, 
