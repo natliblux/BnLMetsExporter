@@ -4,6 +4,9 @@
 .settings/
 .vscode/
 
+# Vscode
+.vscode/
+
 # Maven
 target/
 
