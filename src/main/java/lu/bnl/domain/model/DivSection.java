@@ -77,9 +77,10 @@ public class DivSection {
 		StringBuilder sb = new StringBuilder();
 		for (StringBuilder blockText : blocksForLines.values()) {
 			
+			/* Comment out because not really needed when using <block>
 			if ( sb.length() > 0 && blockText.length() > 0 ) {
 				sb.append("<br/>");
-			}
+			}*/
 			
 			sb.append(blockText);
 		}
