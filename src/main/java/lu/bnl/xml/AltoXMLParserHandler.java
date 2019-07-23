@@ -75,8 +75,9 @@ public class AltoXMLParserHandler extends DefaultHandler {
 	
 	private List<AltoWord> consecutiveTags = new ArrayList<AltoWord>();
 	
-	
-	private String currentTextBlockId;
+	@Deprecated	
+	//private String currentTextBlockId;
+	private Stack<String> currentTextBlockIdStack = new Stack<>();
 	
 	private String previousSiblingTag;
 	
@@ -185,7 +186,9 @@ public class AltoXMLParserHandler extends DefaultHandler {
 		
 		String id = attributes.getValue("ID");
 
-		this.currentTextBlockId = id;
+		//this.currentTextBlockId = id;
+		this.currentTextBlockIdStack.push(id);
+
 		String key = this.fileid + "-" + id; 
 		
 		DivSection article = null;
@@ -231,26 +234,38 @@ public class AltoXMLParserHandler extends DefaultHandler {
 			//logger.warn("EMPTY DUMMY ARTICLE!");
 		}
 
-		// Add blocks start string
-		String blockHtml = String.format("<block page=\"%s\" begin=\"%s\">", this.fileid, this.currentTextBlockId);
-		this.currentArticleTextForLines.append(blockHtml);
-		this.pageTextForLines.append(blockHtml);
+		/*  IF it's a TextBlock (TB), then add blocks tag start string.
+
+			Explanation:
+			Text is contained in Text Blocks only. Composed Blocks do not contain text directly.
+			This means that it is enough to model the Text Blocks in the full text. 
+			Text Blocks are the block "leafs". Componsed Blocks are grouping containers.
+		*/
+		if ( AltoConstant.TAG_TEXTBLOCK.equalsIgnoreCase(qName) ) {
+			String blockHtml = String.format("<block page=\"%s\" begin=\"%s\">", this.fileid, this.currentTextBlockIdStack.peek());
+			this.currentArticleTextForLines.append(blockHtml);
+			this.pageTextForLines.append(blockHtml);
+		}
 		
 		stackArticle.add(article);
 	}
 
 	private void handleTextBlockEnd(String uri, String localName, String qName) {
 
-		if (this.currentTextBlockId != null) {
+		//if (!this.currentTextBlockIdStack.isEmpty()) {
+		//  IF it's a TextBlock (TB), then add blocks tag end string.
+		if ( AltoConstant.TAG_TEXTBLOCK.equalsIgnoreCase(qName) ) {
 			this.currentArticleTextForLines.append(HTML_BLOCK_END);
-			this.pageTextForLines.append(HTML_BLOCK_END);	
+			this.pageTextForLines.append(HTML_BLOCK_END);
 		}
+		//}
 
 		// Add <br/> at the end of TextBlocks so that titles and main paragraphs are spaced. 
 		this.currentArticleTextForLines.append(HTML_BREAK);
 		this.pageTextForLines.append(HTML_BREAK);
 		
-		this.currentTextBlockId = null;
+		//this.currentTextBlockId = null; // Bug, have to use stack
+		this.currentTextBlockIdStack.pop();
 
 		stackArticle.pop();
 	}
@@ -297,7 +312,7 @@ public class AltoXMLParserHandler extends DefaultHandler {
 		}
 		
 		this.currentAltoLine = new AltoLine(id, articleId);
-		this.currentAltoLine.setBlockId(currentTextBlockId);
+		this.currentAltoLine.setBlockId(this.currentTextBlockIdStack.peek());
 		
 		if (currentArticleText != null && currentArticleText.length() > 0 
 				&& currentArticleText.charAt(currentArticleText.length() -1) != ' ' 
@@ -498,7 +513,7 @@ public class AltoXMLParserHandler extends DefaultHandler {
 			
 			wordCoord = new AltoWord();
 			wordCoord.setId(key);
-			wordCoord.setBlockId(currentTextBlockId); // required block id for word
+			wordCoord.setBlockId(this.currentTextBlockIdStack.peek()); // required block id for word
 			wordCoord.setText(text);
 			wordCoord.addCoord(x, y, w, h);
 			wordCoord.setPage(this.fileid);
