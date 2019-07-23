@@ -75,8 +75,6 @@ public class AltoXMLParserHandler extends DefaultHandler {
 	
 	private List<AltoWord> consecutiveTags = new ArrayList<AltoWord>();
 	
-	@Deprecated	
-	//private String currentTextBlockId;
 	private Stack<String> currentTextBlockIdStack = new Stack<>();
 	
 	private String previousSiblingTag;
@@ -186,7 +184,6 @@ public class AltoXMLParserHandler extends DefaultHandler {
 		
 		String id = attributes.getValue("ID");
 
-		//this.currentTextBlockId = id;
 		this.currentTextBlockIdStack.push(id);
 
 		String key = this.fileid + "-" + id; 
@@ -264,7 +261,6 @@ public class AltoXMLParserHandler extends DefaultHandler {
 		this.currentArticleTextForLines.append(HTML_BREAK);
 		this.pageTextForLines.append(HTML_BREAK);
 		
-		//this.currentTextBlockId = null; // Bug, have to use stack
 		this.currentTextBlockIdStack.pop();
 
 		stackArticle.pop();
@@ -456,7 +452,6 @@ public class AltoXMLParserHandler extends DefaultHandler {
 	private void handleHyphen(String uri, String localName, String qName, Attributes attributes) {
 		
 		String content = attributes.getValue( AltoConstant.ATTR_STRING_CONTENT ); // MAIN TEXT IS HERE, no need character method on handler
-		
 		
 		if (this.currentAltoLine !=null) {
 			this.currentAltoLine.getBuffer().append(content);
