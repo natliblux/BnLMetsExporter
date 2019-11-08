@@ -43,24 +43,22 @@ import lu.bnl.domain.managers.export.SolrExportManager;
 import lu.bnl.domain.managers.solr.SolrCleanManager;
 import lu.bnl.domain.model.Config;
 import lu.bnl.files.FileUtil;
-import lu.bnl.reader.LocalMetsGetterImpl;
 import lu.bnl.reader.MetsGetter;
-import lu.bnl.reader.RemoteMetsGetterImpl;
 
 public class BnLMetsExporter extends ParserClient {
 
 	private static final Logger logger = LoggerFactory.getLogger(BnLMetsExporter.class);
-	
+
 	private Options options;
-	
-	private static String OUTPUT_EXPORT_FILE = "import-for-primo.tar.gz";  // Default Value
-	
-	private static String DEFAULT_EXPOR_CONFIG = "config/export.yml";  // Default Value
-	
-	private boolean USE_CLOUD = false;  // Default Value
+
+	private static String OUTPUT_EXPORT_FILE = "import-for-primo.tar.gz"; // Default Value
+
+	private static String DEFAULT_EXPOR_CONFIG = "config/export.yml"; // Default Value
+
+	private boolean USE_CLOUD = false; // Default Value
 
 	public BnLMetsExporter() {
-		
+
 	}
 
 	public BnLMetsExporter(boolean USE_CLOUD) {
@@ -68,116 +66,106 @@ public class BnLMetsExporter extends ParserClient {
 	}
 
 	public static void main(String[] args) throws ParseException {
-		
+
 		BnLMetsExporter.printLicenseHelp();
-		
+
 		BnLMetsExporter exporterApp = new BnLMetsExporter();
 		exporterApp.parseArguments(args);
-		
+
 	}
-	
+
 	public static void printLicenseHelp() {
-		System.out.println("This is free software, see COPYING and AUTHORS files for details given with this program.");	
+		System.out.println("This is free software, see COPYING and AUTHORS files for details given with this program.");
 	}
 
 	@SuppressWarnings("static-access")
 	void parseArguments(String[] args) throws ParseException {
-				
+
 		options = new Options();
 
 		OptionGroup groupCommands = new OptionGroup();
-		
-		//================================================================================
-		// Global
-		//================================================================================
 
-		addOptionalOption(options, CliConstant.OPTION_L_CLOUD, 
+		// ================================================================================
+		// Global
+		// ================================================================================
+
+		addOptionalOption(options, CliConstant.OPTION_L_CLOUD,
 				String.format("Flag to enable SolrCloud Mode. Default: %b", this.USE_CLOUD));
-		
-		//================================================================================
+
+		// ================================================================================
 		// HELP
-		//================================================================================
-		
-		groupCommands.addOption(OptionBuilder
-				.hasArg(false)
-				.isRequired(false)
-				.withDescription("Show the help of this program.")
-				.withLongOpt(CliConstant.CMD_L_HELP)
-				.create(CliConstant.CMD_S_HELP));
-		
-		//================================================================================
+		// ================================================================================
+
+		groupCommands.addOption(
+				OptionBuilder.hasArg(false).isRequired(false).withDescription("Show the help of this program.")
+						.withLongOpt(CliConstant.CMD_L_HELP).create(CliConstant.CMD_S_HELP));
+
+		// ================================================================================
 		// TEST CONFIG
-		//================================================================================
-		
-		groupCommands.addOption(OptionBuilder
-				.hasArg(false)
-				.isRequired(false)
-				.withDescription("Test and prints the config.")
-				.withLongOpt(CliConstant.CMD_L_TESTCONFIG)
-				.create(CliConstant.CMD_S_TESTCONFIG));
-		
-		//================================================================================
+		// ================================================================================
+
+		groupCommands
+				.addOption(OptionBuilder.hasArg(false).isRequired(false).withDescription("Test and prints the config.")
+						.withLongOpt(CliConstant.CMD_L_TESTCONFIG).create(CliConstant.CMD_S_TESTCONFIG));
+
+		// ================================================================================
 		// Generate / Export
-		//================================================================================
-		
-		groupCommands.addOption(OptionBuilder
-				.hasOptionalArg()
-				.isRequired(false)
-				.withDescription("Export documents, given as a list of PIDS, for Primo or Solr. (-export <TARGET>, <TARGET can be 'primo', 'solr'>)")
-				.withLongOpt(CliConstant.CMD_L_EXPORT)
-				.create(CliConstant.CMD_S_EXPORT));
-		
+		// ================================================================================
+
+		groupCommands.addOption(OptionBuilder.hasOptionalArg().isRequired(false).withDescription(
+				"Export documents, given as a list of PIDS, for Primo or Solr. (-export <TARGET>, <TARGET can be 'primo', 'solr'>)")
+				.withLongOpt(CliConstant.CMD_L_EXPORT).create(CliConstant.CMD_S_EXPORT));
+
 		addOptionalArgOption(options, CliConstant.OPTION_L_PIDS,
 				String.format("Input file for pids for remote download of METS files."));
-		
-		addOptionalArgOption(options, CliConstant.OPTION_L_DIR,
-				"The base directory.");
-		
-		addOptionalArgOption(options, CliConstant.OPTION_L_OUTPUT, 
+
+		addOptionalArgOption(options, CliConstant.OPTION_L_DIR, "The base directory.");
+
+		addOptionalArgOption(options, CliConstant.OPTION_L_OUTPUT,
 				String.format("Output dir/file (default: %s)", OUTPUT_EXPORT_FILE));
-		
+
 		addOptionalArgOption(options, CliConstant.OPTION_L_CONFIG,
 				String.format("Path to the export YAML configuration file. (default: %s)", DEFAULT_EXPOR_CONFIG));
-		
-		addOptionalOption(options, CliConstant.OPTION_L_OVERWRITE, 
+
+		addOptionalOption(options, CliConstant.OPTION_L_OVERWRITE,
 				"Flag to override the output file if it already exists.");
-		
-		addOptionalOption(options, CliConstant.OPTION_L_PARALLEL, 
+
+		addOptionalOption(options, CliConstant.OPTION_L_PARALLEL,
 				"Flag to compute PIDs in parallel. This will output multiple TARGZs files.");
-		
-		//================================================================================
+
+		// ================================================================================
 		// Clean
-		//================================================================================
-		
-		groupCommands.addOption(OptionBuilder
-				.isRequired(false)
-				.withDescription("Clean the Solr index (-clean)")
-				.withLongOpt(CliConstant.CMD_L_CLEAN)
-				.create(CliConstant.CMD_S_CLEAN));
-		
-		//================================================================================
-		//================================================================================
-		
+		// ================================================================================
+
+		groupCommands.addOption(OptionBuilder.isRequired(false).withDescription("Clean the Solr index (-clean)")
+				.withLongOpt(CliConstant.CMD_L_CLEAN).create(CliConstant.CMD_S_CLEAN));
+
+		// ================================================================================
+		// ================================================================================
+
 		options.addOptionGroup(groupCommands);
 
 		CommandLineParser parser = new BasicParser();
 		CommandLine cmd = parser.parse(options, args);
-		
+
 		if (args == null || args.length == 0) {
 			this.printHelp(options);
 			return;
 		}
-		
+
 		console("BnLMetsExporter = " + AppVersion.VERSION);
 		console("Solr = " + AppVersion.SOLR_VERSION);
 
 		this.USE_CLOUD = cmd.hasOption(CliConstant.OPTION_L_CLOUD);
 
 		console("Cloud Mode: " + this.USE_CLOUD);
-		
+
+		// Load the config file for the export
+		this.loadConfig(cmd);
+
 		this.processCommandLine(cmd);
 	}
-	
+
 	/**
 	 * Processes the command line and checking all options.
 	 * 
@@ -186,25 +174,25 @@ public class BnLMetsExporter extends ParserClient {
 	private void processCommandLine(CommandLine cmd) {
 
 		if (cmd.hasOption(CliConstant.CMD_L_HELP)) {
-			
+
 			this.printHelp(this.options);
-			
+
 		} else if (cmd.hasOption(CliConstant.CMD_L_EXPORT)) {
-			
+
 			this.perform_export(cmd);
-		
+
 		} else if (cmd.hasOption(CliConstant.CMD_L_CLEAN)) {
-			
+
 			this.perform_clean(cmd);
-			
+
 		} else if (cmd.hasOption(CliConstant.CMD_L_TESTCONFIG)) {
-			
+
 			this.perform_testConfig(cmd);
-			
+
 		} else {
-			
+
 			console("Unknown command");
-			
+
 			this.printHelp(this.options);
 		}
 	}
@@ -217,48 +205,44 @@ public class BnLMetsExporter extends ParserClient {
 				return 0;
 			}
 		});
-		
-		String[] commandList = {
-				CliConstant.CMD_L_HELP,
-				CliConstant.CMD_L_EXPORT,
-				CliConstant.CMD_L_CLEAN,
-				CliConstant.CMD_L_TESTCONFIG
-		};
-		
-		String commands = StringUtils.join(commandList, ", "); 
-		String header = String.format("BnLMetsExporter %s / Solr %s \nAvailable commands:\n%s", 
-				AppVersion.VERSION, AppVersion.SOLR_VERSION, commands);
-		
+
+		String[] commandList = { CliConstant.CMD_L_HELP, CliConstant.CMD_L_EXPORT, CliConstant.CMD_L_CLEAN,
+				CliConstant.CMD_L_TESTCONFIG };
+
+		String commands = StringUtils.join(commandList, ", ");
+		String header = String.format("BnLMetsExporter %s / Solr %s \nAvailable commands:\n%s", AppVersion.VERSION,
+				AppVersion.SOLR_VERSION, commands);
+
 		String footer = null;
-		
+
 		formatter.printHelp("java -jar BnLMetsExporter", header, options, footer, false);
 	}
-	
-	//================================================================================
+
+	// ================================================================================
 	// Command Line Functions
-	//================================================================================
-	
+	// ================================================================================
+
 	private void loadConfig(CommandLine cmd) {
 		// Load the config file for the export
 		String inputConfig = cmd.getOptionValue(CliConstant.OPTION_L_CONFIG, DEFAULT_EXPOR_CONFIG);
 		console("Loading Config: " + inputConfig);
-		
+
 		AppConfigurationManager.getInstance().loadYmlExportConfig(inputConfig);
 	}
-	
+
 	// Used by: PrimoExport
 	private void perform_export(CommandLine cmd) {
 		String exportMethod = cmd.getOptionValue(CliConstant.CMD_L_EXPORT, "");
-		
+
 		// Try to recognize commands
 		boolean exportPrimo = exportMethod.equalsIgnoreCase(CliConstant.CMD_EXPORT_OPTION_PRIMO);
-		boolean exportSolr 	= exportMethod.equalsIgnoreCase(CliConstant.CMD_EXPORT_OPTION_SOLR);
-		
-		if ( !exportPrimo && !exportSolr ) {
+		boolean exportSolr = exportMethod.equalsIgnoreCase(CliConstant.CMD_EXPORT_OPTION_SOLR);
+
+		if (!exportPrimo && !exportSolr) {
 			console("[ABORT] No export target as been set. use -export primo or -export solr");
 			return;
 		}
-		
+
 		console("Exporting for:");
 		if (exportPrimo) {
 			console(" - Primo");
@@ -266,46 +250,29 @@ public class BnLMetsExporter extends ParserClient {
 		if (exportSolr) {
 			console(" - Solr");
 		}
-		
-		String dir	= cmd.getOptionValue(CliConstant.OPTION_L_DIR);
-		String pids	= cmd.getOptionValue(CliConstant.OPTION_L_PIDS);
-		
-		// Convenience for readable if-else
-		Boolean hasDir = dir != null;
-		Boolean hasPids = pids != null;
-		
-		// Init for later use
+
+		String dir = cmd.getOptionValue(CliConstant.OPTION_L_DIR);
+		String pids = cmd.getOptionValue(CliConstant.OPTION_L_PIDS); // TODO: Rename to Items
+
 		MetsGetter metsGetter = null;
 		String metsGetterInputData = null;
-		
-		if (hasPids && hasDir) { // Note: hasOption somehow does not work, since there is a default value...
-			console("Using Remote Mets Getter.");
-			metsGetter = new RemoteMetsGetterImpl();
-			
-			metsGetterInputData = pids;
-			
-			// Check if the PIDS file is valid
-			if (FileUtil.checkFile(pids) == null) {
-				console("Abording! Reason: You must provide a valid PIDS file.");
+
+		try {
+			metsGetter = MetsGetter.getInstanceForConfig();
+			console(String.format("Using MetsGetter: %s", metsGetter.getClass().getName()));
+
+			metsGetterInputData = metsGetter.validateInput(dir, pids);
+			if (metsGetterInputData == null) {
+				console("Invalid Input. Directory or Items are wrong for the configured MetsGetter.");
 				return;
 			}
-			
-		} else if ( hasDir ) {
-			console("Using Local Mets Getter.");
-			metsGetter = new LocalMetsGetterImpl();
-			
-			metsGetterInputData = dir;
-			
-		} else {
-			console("Abording! Reason: You must provide a -dir for finding METS files. The option -pids is optional for local usage.");
+
+		} catch (Exception e) {
+			e.printStackTrace();
 			return;
 		}
 
-		// Check if the DIR is valid
-		if (FileUtil.checkDir(dir) == null) {
-			console("Abording! Reason: You must provide a valid dir.");
-			return;
-		}
+		// Continue if no error before
 		
 		String outputExportFile	= cmd.getOptionValue(CliConstant.OPTION_L_OUTPUT, 	"" + OUTPUT_EXPORT_FILE);
 		
@@ -340,9 +307,6 @@ public class BnLMetsExporter extends ParserClient {
 			// TODO: Add any specific solr checks if necessary.
 			
 		}
-		
-		// Load the config file for the export
-		this.loadConfig(cmd);
 		
 		// Find all Mets
 		metsGetter.findAllMets(metsGetterInputData);

@@ -35,11 +35,35 @@ import org.slf4j.LoggerFactory;
 
 import lu.bnl.AppGlobal;
 import lu.bnl.configuration.AppConfigurationManager;
+import lu.bnl.files.FileUtil;
 
 public class RemoteMetsGetterImpl extends MetsGetter {
 
 	private static final Logger logger = LoggerFactory.getLogger(RemoteMetsGetterImpl.class);
 	
+	
+	@Override
+	public String validateInput(String dir, String items) {
+		Boolean hasDir		= dir != null;
+		Boolean hasItems	= items != null;
+		Boolean isDirOk		= FileUtil.checkDir(dir) != null;
+		Boolean isItemsOk	= FileUtil.checkFile(items) != null;
+
+		if (!isDirOk) {
+			logger.info("Abording! Reason: You must provide a valid directory.");
+		}
+
+		if (!isItemsOk) {
+			logger.info("Abording! Reason: You must provide a valid items file.");
+		}
+
+		if (hasDir && hasItems && isDirOk && isItemsOk) {
+			return items;
+		}
+
+		return null;
+	}
+
 	@Override
 	public void findAllMets(String path) {
 		List<String> pids = null;
@@ -61,7 +85,7 @@ public class RemoteMetsGetterImpl extends MetsGetter {
 	@Override
 	public String getMetsContent(String data) {
 
-		String urlGetMets = AppConfigurationManager.getInstance().getExportConfig().getMetsURL;
+		String urlGetMets = AppConfigurationManager.getInstance().getExportConfig().metsGetter.url;
 		
 		String result = null;
 		try {

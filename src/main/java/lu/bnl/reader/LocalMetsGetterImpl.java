@@ -30,11 +30,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import lu.bnl.files.FileFinder;
+import lu.bnl.files.FileUtil;
 
 public class LocalMetsGetterImpl extends MetsGetter {
 
 	private static final Logger logger = LoggerFactory.getLogger(LocalMetsGetterImpl.class);
 	
+	
+	@Override
+	public String validateInput(String dir, String items) {
+		
+		Boolean hasDir 		= dir != null;
+		Boolean isDirOk		= FileUtil.checkDir(dir) != null;
+
+		if (!isDirOk) {
+			logger.info("Abording! Reason: You must provide a valid directory.");
+		}
+
+		if (hasDir && isDirOk) {
+			return dir;
+		}
+
+		return null;
+	}
+
 	@Override
 	public void findAllMets(String path) {
 		
@@ -61,7 +80,7 @@ public class LocalMetsGetterImpl extends MetsGetter {
 	}
 	
 	/** The data must be a path to the METS file.
-	 *  Return the entire METS file.
+	 *  Return the entire METS file content.
 	 */
 	@Override
 	public String getMetsContent(String data) {

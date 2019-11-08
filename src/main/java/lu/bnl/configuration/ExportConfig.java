@@ -40,9 +40,9 @@ public class ExportConfig {
 	 */
 	public Map<String, List<LinkedHashMap<String, String>>> metsType;
 	
-	/** Defines the URL to request METS files.
+	/** Defines the URL and class to request METS files.
 	 */
-	public String getMetsURL;
+	public MetsGetterConfig metsGetter;
 	
 	/** Defines the URL to request the Identifier based on another id. 
 	 *  (Used by the BnL to convert PIDs to ARKs identifiers during a transition phase)
@@ -157,7 +157,11 @@ public class ExportConfig {
 			}
 		}
 		
-		stringBuilder.append( String.format("- Get METS URL:\n   %s\n", Optional.ofNullable(this.getMetsURL).orElse(notset) ));
+		stringBuilder.append("- METS Getter:\n");
+		if (this.metsGetter != null) {
+			stringBuilder.append( String.format(" - URL   : %s\n", Optional.ofNullable(this.metsGetter.url).orElse(notset) ));
+			stringBuilder.append( String.format(" - Class : %s\n", Optional.ofNullable(this.metsGetter.clazz).orElse(notset) ));
+		}
 		
 		stringBuilder.append("- Remote Identifier:\n");
 		if (this.remoteIdentifier != null) {

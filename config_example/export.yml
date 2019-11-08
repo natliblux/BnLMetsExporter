@@ -152,7 +152,9 @@ metsType:
     - type: IMPRINT
       isArticle: false
 
-getMetsURL: "http://my-server.com/getMetsXml"
+metsGetter:
+  url:  "http://my-server.com/getMetsXml"
+  clazz: "lu.bnl.reader.LocalMetsGetterImpl"
 
 remoteIdentifier:
     enable: false

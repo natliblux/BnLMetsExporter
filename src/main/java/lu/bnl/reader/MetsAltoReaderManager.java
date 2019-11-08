@@ -85,7 +85,7 @@ public class MetsAltoReaderManager {
 	
 	public static String downloadMetsContent(String pid) {
 		
-		String urlGetMets = AppConfigurationManager.getInstance().getExportConfig().getMetsURL;
+		String urlGetMets = AppConfigurationManager.getInstance().getExportConfig().metsGetter.url;
 		
 		String result = null;
 		try {

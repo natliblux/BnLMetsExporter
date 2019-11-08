@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with BnLMetsExporter.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package lu.bnl.domain.managers.remote;
+package lu.bnl.custom;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -24,16 +24,17 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import com.google.gson.Gson;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-
 import lu.bnl.AppGlobal;
 import lu.bnl.configuration.AppConfigurationManager;
 import lu.bnl.configuration.RemoteIdentifierConfig;
+import lu.bnl.domain.managers.remote.RemoteIdentifierManager;
 import lu.bnl.domain.model.DivSection;
 
 /**
@@ -131,9 +132,9 @@ public class BnLRemoteIdentifierManager extends RemoteIdentifierManager {
 			}
 		}
 		
-		return response;
+		return null;
 	}
-	
+
 	private String getPrefixFromConfig() {
 		RemoteIdentifierConfig ric = AppConfigurationManager.getInstance().getExportConfig().remoteIdentifier;
 		if (ric == null || ric.enable == false) {
@@ -145,37 +146,6 @@ public class BnLRemoteIdentifierManager extends RemoteIdentifierManager {
 		} else {
 			return "";
 		}
-	}
-	
-	// Custom class to convert JSON to objects
-	
-	private class ResponseMessage {
-		
-		public String timestamp;
-		
-		public String message;
-		
-		public String status;
-		
-		public MetsData data;
-
-	}
-	
-	private class MetsData {
-		
-		public String ark;
-		
-		public String pid;
-
-		public String createdOn;
-		
-		public String lastUpdatedOn;
-		
-		public int numberOfFileMaps;
-		
-		public boolean containsMetsContent;
-
-	}
-	
+	}	
 	
 }

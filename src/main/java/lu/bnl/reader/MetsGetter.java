@@ -21,10 +21,22 @@ package lu.bnl.reader;
 import java.util.ArrayList;
 import java.util.List;
 
+import lu.bnl.configuration.AppConfigurationManager;
+import lu.bnl.configuration.MetsGetterConfig;
+
 public abstract class MetsGetter {
 
 	private List<String> metsData = new ArrayList<>();
 	
+	/** Validate the command line inputs.
+	 *  MetsGetter processes directory and/or items.
+	 * 
+	 * @param dir
+	 * @param items
+	 * @return The data to be used as input data
+	 */
+	public abstract String validateInput(String dir, String items);
+
 	/** Finds and return the list of all paths to METS file in a specific path.
 	 * 
 	 * @param path	The path to find METS files.
@@ -62,4 +74,22 @@ public abstract class MetsGetter {
 		this.metsData = metsData;
 	}
 	
+	/**
+	 * Takes the clazz parameter from the app configuration and tries to create a class
+	 * that is a subclass of MetsGetter. This allows that the MetsGetter
+	 * is configurable and reduces the amount of code that has to change.
+	 * 
+	 * @return A new instance of a MetsGetter, null otherwise.
+	 * @throws Exception
+	 */
+	public static MetsGetter getInstanceForConfig() throws Exception {
+		MetsGetterConfig metsGetterConfig = AppConfigurationManager.getInstance().getExportConfig().metsGetter;
+		if (metsGetterConfig != null) {
+			Class<? extends MetsGetter> c = Class.forName(metsGetterConfig.clazz).asSubclass(MetsGetter.class);
+			return c.newInstance();	
+		}
+		
+		return null;
+	}
+
 }
