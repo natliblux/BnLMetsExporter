@@ -29,17 +29,13 @@ import org.junit.runners.JUnit4;
  */
 public class TestJarClient {
 
-
-	private static final String ALTO_DIR = "/";
-	
 	@Test
-	public void testExtract() throws ParseException {
-		run(" --export primo -pids examples/pids.lst -dir "+ALTO_DIR+" -out exports/");
+	public void testConfig() throws ParseException {
+		run(" -tc");
 	}
 	
 	private void run(String cmdRun) throws ParseException {
 		BnLMetsExporter client = new BnLMetsExporter();
-
 		
 		String[] args=null;
 		if (cmdRun != null) {
