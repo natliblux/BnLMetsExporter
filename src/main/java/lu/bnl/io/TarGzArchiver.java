@@ -192,6 +192,10 @@ public class TarGzArchiver implements Archiver {
 			
 			filename = this.getFilenameForOriginalDir(article);
 			
+		} else if ( strategy == ArchiverFilenameStrategy.ARK) {
+
+			filename = this.getFilenameForArk(article);
+
 		}
 
 		return filename;
@@ -205,7 +209,7 @@ public class TarGzArchiver implements Archiver {
 	 * folders of about 1000 objects.
 	 * 
 	 * @param article
-	 * @return
+	 * @return The file path.
 	 */
 	private String getFilenameFromPrimoDocument(PrimoDocument article) {
 		String pid 		= article.getPid();
@@ -216,14 +220,12 @@ public class TarGzArchiver implements Archiver {
 		String begin	= article.getBegin();
 		
 		if (dmdid == null){
-			dmdid = ""; 
+			dmdid = "";
 		}
 		
 		String dir = pid.substring(pid.length() - 3) + "/" + pid; // Take the last 3 number of the PID and then the PID
 		
-		String path = String.format("%s/%s-%s-%s.xml", dir, pid, dmdid, id);
-		
-		return path;
+		return String.format("%s/%s-%s-%s.xml", dir, pid, dmdid, id);
 	}
 	
 	/** 
@@ -231,7 +233,7 @@ public class TarGzArchiver implements Archiver {
 	 * The pid is used as directory.
 	 * 
 	 * @param article
-	 * @return
+	 * @return The file path.
 	 */
 	private String getFilenameForOriginalDir(PrimoDocument article) {
 		String pid 		= article.getPid();
@@ -239,6 +241,30 @@ public class TarGzArchiver implements Archiver {
 		String id 		= article.getId();
 		
 		String dir 		= pid;
+		
+		return String.format("%s/%s-%s-%s.xml", dir, pid, dmdid, id);
+	}
+
+	/**
+	 * The XML filename is based on the ARK, dmdId and id.
+	 * The ARK is cleaned to support the file system (replacement of special characters)
+	 * 
+	 * @param article
+	 * @return The file path.
+	 */
+	private String getFilenameForArk(PrimoDocument article) {
+		String pid 		= article.getPid();
+		pid = pid.replace(":", "-");
+		pid = pid.replace("/", "-");
+
+		String dmdid 	= article.getDmdid();
+		String id 		= article.getId();
+		
+		if (dmdid == null){
+			dmdid = "";
+		}
+		
+		String dir = pid.substring(pid.length() - 3) + "/" + pid; // Take the last 3 number of the PID and then the PID
 		
 		return String.format("%s/%s-%s-%s.xml", dir, pid, dmdid, id);
 	}
