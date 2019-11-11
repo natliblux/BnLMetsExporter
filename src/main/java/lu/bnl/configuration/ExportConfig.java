@@ -51,6 +51,7 @@ public class ExportConfig {
 	/** Defines the URL to request the Identifier based on another id. 
 	 *  (Used by the BnL to convert PIDs to ARKs identifiers during a transition phase)
 	 */
+	@Deprecated
 	public RemoteIdentifierConfig remoteIdentifier;
 	
 	/** Defines the URL to link back to the Viewer (for Primo Export).

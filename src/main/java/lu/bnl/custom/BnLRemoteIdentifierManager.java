@@ -43,6 +43,7 @@ import lu.bnl.domain.model.DivSection;
  * This class allows to get the new ARK identifier given a PID.
  * In addition, the qualifier part of the ARK is added with the use of the article (DivSection).
  */
+@Deprecated
 public class BnLRemoteIdentifierManager extends RemoteIdentifierManager {
 
 	private static final Logger logger = LoggerFactory.getLogger(BnLRemoteIdentifierManager.class);
