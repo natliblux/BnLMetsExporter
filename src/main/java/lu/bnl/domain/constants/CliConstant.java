@@ -42,7 +42,7 @@ public class CliConstant {
 	
 	public static final String CMD_EXPORT_OPTION_SOLR		= "solr";
 	
-	public static final String OPTION_L_PIDS		= "pids";
+	public static final String OPTION_L_DOCIDS		= "dids";
 	
 	public static final String OPTION_L_DIR			= "dir";
 	
