@@ -18,26 +18,17 @@
  *******************************************************************************/
 package lu.bnl.io;
 
-import lu.bnl.reader.LocalMetsGetterImpl;
 import lu.bnl.reader.MetsGetter;
-import lu.bnl.reader.RemoteMetsGetterImpl;
 
 public enum ArchiverFilenameStrategy {
 
-	PID_DIGITOOL, // This strategy is for digitool data with a PID
-	ORIGINAL_DIR // This strategy is for local mets files, where the parent path will be used. e.g path/to/mets without /my_mets.xml
+	PID_DIGITOOL, 	// This strategy is for digitool data with a PID
+	ARK,			// This startegy is for ark like 'ark:naan/name'
+	ORIGINAL_DIR 	// This strategy is for local mets files, where the parent path will be used. e.g path/to/mets without /my_mets.xml
 	;
 	
 	public static ArchiverFilenameStrategy getPreferedStrategyForMetsGetter(MetsGetter metsGetter) {
-		if ( metsGetter instanceof LocalMetsGetterImpl  ) {
-			return ArchiverFilenameStrategy.ORIGINAL_DIR;
-		}
-		
-		if ( metsGetter instanceof RemoteMetsGetterImpl  ) {
-			return ArchiverFilenameStrategy.PID_DIGITOOL;
-		}
-		
-		return null;
+		return metsGetter.getArchiverFilenameStrategy();
 	}
 	
 }
