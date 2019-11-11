@@ -26,6 +26,7 @@ import lu.bnl.domain.model.DivSection;
  *  remote system or do any other computation to get the right ID
  *  based on another initial ID.
  */
+@Deprecated
 public abstract class RemoteIdentifierManager {
 
 	/**
