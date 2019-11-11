@@ -131,7 +131,7 @@ public class DublinCoreDocument {
 		
 		this.publisher = builder.getPublisher();
 		
-		this.relation = builder.getPid();
+		this.relation = builder.getDocumentID();
 		
 		this.hasVersion = this.createHasVersion(builder);
 		
@@ -173,7 +173,7 @@ public class DublinCoreDocument {
 				
 		Map <String, String> mapping = new HashMap<>();
 		mapping.put("host"		, this.host);
-		mapping.put("pid"		, builder.getPid());
+		mapping.put("pid"		, builder.getDocumentID());
 		mapping.put("id"		, builder.getId());
 		mapping.put("panel"		, builder.getPanel());
 		

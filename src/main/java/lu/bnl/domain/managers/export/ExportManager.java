@@ -79,15 +79,15 @@ public abstract class ExportManager {
 	protected int getReasonableNumberOfAvailableCores(int workload) {
 		return Math.min(getRuntimeCores() - 1, workload);
 	}
-
-	protected List<List<String>> getPartitions(List<String> pidContentLists, int cores) {
-		int partitionSize = pidContentLists.size() / cores;
+	
+	protected List<List<String>> getPartitions(List<String> documentIDContentLists, int cores) {
+		int partitionSize = documentIDContentLists.size() / cores;
 		List<List<String>> partitions = new LinkedList<List<String>>();
-		for (int i = 0; i < pidContentLists.size(); i += partitionSize) {
-			List<String> sublist = pidContentLists.subList(i, Math.min(i + partitionSize, pidContentLists.size()));
-			partitions.add(sublist);
-
-			console(String.format(" - Partition %d : %d PIDs", i, sublist.size()));
+		for (int i = 0; i < documentIDContentLists.size(); i += partitionSize) {
+			List<String> sublist = documentIDContentLists.subList(i, Math.min(i + partitionSize, documentIDContentLists.size()));
+		    partitions.add(sublist);
+		    
+		    console(String.format(" - Partition %d : %d Document IDs", i, sublist.size()));
 		}
 
 		return partitions;
@@ -106,13 +106,12 @@ public abstract class ExportManager {
 		double hours = (AppGlobal.FILES_TOTAL * avg) / (60 * 60);
 		console(String.format("Projection for %d files: %.2f h = %.2f days.", AppGlobal.FILES_TOTAL, hours, (hours / 24)));
 	}
-
-	public static ArticleDocumentBuilder getArticleDocumentBuilder(String pid, DivSection article,
-			MetsXMLParserHandler handler) {
-		String id = article.getId();
-		String text = article.getText();
-		String type = article.getType();
-
+	
+	public static ArticleDocumentBuilder getArticleDocumentBuilder(String documentID, DivSection article, MetsXMLParserHandler handler) {
+		String id 		= article.getId();
+		String text 	= article.getText();
+		String type 	= article.getType();
+		
 		String lineText = article.getTextInLineFormat();
 		String wordText = article.getHtmlizedWords(true);
 
@@ -130,11 +129,12 @@ public abstract class ExportManager {
 		List<String> languages = new ArrayList<>();
 
 		// Get ARK via the RemoteIdentifierManager
+		// TODO: CHANGE Config and or this since ARK can be the document ID
 		try {
 			RemoteIdentifierManager remoteIdentifierManager = RemoteIdentifierManager.getInstanceForConfig();
 			// Can be null if something went wrong or if enable = false
 			if (remoteIdentifierManager != null) {
-				ark = remoteIdentifierManager.getIdByPID(pid, article);
+				ark = remoteIdentifierManager.getIdByPID(documentID, article);
 			}
 		} catch (Exception e) {
 			logger.error("Error during RemoteIdentifierManager.", e);
@@ -301,7 +301,7 @@ public abstract class ExportManager {
 			
 		}
 		
-		ArticleDocumentBuilder builder = new ArticleDocumentBuilder(id, pid)
+		ArticleDocumentBuilder builder = new ArticleDocumentBuilder(id, documentID)
 				.ark(ark)
 				.dmdId(dmdid)
 				.recordIdentifier(recordIdentifier)

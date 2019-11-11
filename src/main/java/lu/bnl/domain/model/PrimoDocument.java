@@ -59,7 +59,7 @@ public class PrimoDocument {
 	 * ID of the METS object.
 	 */
 	@XStreamOmitField
-	private String pid;
+	private String documentID;
 	
 	@XStreamOmitField
 	private String dmdid;
@@ -82,9 +82,9 @@ public class PrimoDocument {
 		
 	}
 	
-	public PrimoDocument(String id, String pid, String dmdid) {
+	public PrimoDocument(String id, String documentID, String dmdid) {
 		this.id = id;
-		this.pid = pid;
+		this.documentID = documentID;
 		this.dmdid = dmdid;
 		
 		this.responseDate = formater.format(new Date()); //"2014-04-23T17:49:05";
@@ -94,17 +94,17 @@ public class PrimoDocument {
 		this.listRecords = new ListRecords();
 
 		String recordIdentifierBase = AppConfigurationManager.getInstance().getExportConfig().primo.recordIdentifier;
-		String recordIdentifier = String.format("%s:%s-%s", recordIdentifierBase, pid, id);
+		String recordIdentifier = String.format("%s:%s-%s", recordIdentifierBase, documentID, id);
 		
 		this.listRecords.getRecord().getHeader().setIdentifier( recordIdentifier );
 	}
 
-	public String getPid() {
-		return pid;
+	public String getDocumentID() {
+		return documentID;
 	}
 
-	public void setPid(String pid) {
-		this.pid = pid;
+	public void setDocumentID(String documentID) {
+		this.documentID = documentID;
 	}
 	
 	public String getId() {

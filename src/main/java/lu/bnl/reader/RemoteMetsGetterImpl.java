@@ -67,16 +67,16 @@ public class RemoteMetsGetterImpl extends MetsGetter {
 
 	@Override
 	public void findAllMets(String path) {
-		List<String> pids = null;
+		List<String> documentIDs = null;
 		
 		try {
-			pids = FileUtils.readLines(new File(path), Charset.forName("UTF-8"));
+			documentIDs = FileUtils.readLines(new File(path), Charset.forName("UTF-8"));
 		} catch (IOException e) {
-			logger.error("Failed to read PIDS file at " + path, e);
+			logger.error("Failed to read Document IDs file at " + path, e);
 			e.printStackTrace();
 		}
 		
-		this.setMetsData(pids);
+		this.setMetsData(documentIDs);
 	}
 	
 	/** The data must be a PID. for the config getMetsURL + ?pid=data.

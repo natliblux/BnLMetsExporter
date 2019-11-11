@@ -73,7 +73,7 @@ public class PrimoExportManager extends ExportManager {
 		
 		StatisticsManager.getInstance().countFiles(count);
 		
-		logger.info(String.format("%d Mets PIDs have been found.", this.count));
+		logger.info(String.format("%d Mets Document IDs have been found.", this.count));
 		
 		if (this.parallel) {
 			console("Mode: Parallel");
@@ -97,10 +97,10 @@ public class PrimoExportManager extends ExportManager {
 		dublinCoreExporter.open();
 		
 		for (String metsAddress : metsData) {
-			
-			String pid = this.metsGetter.getUniqueName(metsAddress); // Note: pid must be processed differently for local
-			String path = this.metsGetter.getMetsLocation(metsAddress);
-			
+
+			String documentID 	= this.metsGetter.getUniqueName(metsAddress); // Note: did must be processed differently for local
+			String path 		= this.metsGetter.getMetsLocation(metsAddress);
+
 			String dir = this.dir;
 			
 			// If the location of the METS is defined by the metsGetter then use it, otherwise use the argument dir
@@ -111,16 +111,21 @@ public class PrimoExportManager extends ExportManager {
 				dir = path;
 			}
 			
-			//System.out.println("THE PID IS : " + pid); // DEBUG
-			//System.out.println("  THE METSLOCATION IS : " + path); // DEBUG
+			System.out.println("THE DOCUMENT ID IS : " + documentID); // DEBUG
+			System.out.println("THE METSADDRESS IS : " + metsAddress); // DEBUG
+			System.out.println("THE METSLOCATION IS : " + path); // DEBUG
 			
-			String content = metsGetter.getMetsContent(metsAddress);
+			// If the path if available, use it to retrieve the content, otherwise use the metsAddress.
+			// The path comes from the metsGetter.getMetsLocation and the return value depends on the implementation.
+			String metsContentRequestData = (path != null) ? path : metsAddress;
 			
-			MetsXMLParserHandler metsHandler = MetsAltoReaderManager.parseMets(pid, content, dir, false, supportedMetsTypes);
+			String content = metsGetter.getMetsContent(metsContentRequestData);
+			
+			MetsXMLParserHandler metsHandler = MetsAltoReaderManager.parseMets(documentID, content, dir, false, supportedMetsTypes);
 			
 			if (metsHandler.isSupported()) {
 			
-				DocList docList = this.handleMetsResult(metsHandler, pid, false);
+				DocList docList = this.handleMetsResult(metsHandler, documentID, false);
 	
 				// Create Dublin Core Documents
 				for (DivSection article : metsHandler.getArticles().values()) {
@@ -130,7 +135,7 @@ public class PrimoExportManager extends ExportManager {
 					//System.out.println(article.getTextInLineFormat());
 
 					// DocList is automatically changed.
-					if ( dublinCoreExporter.save(article, pid, metsHandler, docList) ) {
+					if ( dublinCoreExporter.save(article, documentID, metsHandler, docList) ) {
 						// SUCCESS
 					} else {
 						// FAIL
@@ -141,7 +146,7 @@ public class PrimoExportManager extends ExportManager {
 				StatisticsManager.getInstance().countArticles( docList.primoarticles.size() );
 				StatisticsManager.getInstance().countPages( docList.pages );
 			} else {
-				logger.info(String.format("METS with PID %s is not supported.", pid));
+				logger.info(String.format("METS with Document ID %s is not supported.", documentID));
 				StatisticsManager.getInstance().countCustom("Not Supported", 1);
 			}
 			
@@ -153,7 +158,7 @@ public class PrimoExportManager extends ExportManager {
 		dublinCoreExporter.close();
 	}
 	
-	private DocList handleMetsResult(MetsXMLParserHandler handler, String pid, boolean useTokenizer) {
+	private DocList handleMetsResult(MetsXMLParserHandler handler, String documentID, boolean useTokenizer) {
 		DocList docList = new DocList();
 
 		try {
@@ -174,18 +179,17 @@ public class PrimoExportManager extends ExportManager {
 			}
 			
 		} catch (Exception e) {
-			logger.error("Mets "+pid+" failed to be parsed", e);
+			logger.error("Mets " + documentID + " failed to be parsed", e);
 		}
 
 		return docList;
 
 	}
 	
-	/** Runs the export in parallel by splitting the list of PIDs
+	/** Runs the export in parallel by splitting the list of Document IDs
 	 *  on multiple threads. Each thread will output its own tar.gz
 	 *  file. Each thread calls the standard export function.
 	 * 
-	 * @param pidContents
 	 * @param output
 	 */
 	private void exportParallel(String output) {
@@ -195,10 +199,10 @@ public class PrimoExportManager extends ExportManager {
 		}
 		
 		// Get the optimal number of cores
-		// Do not use more cores than we have PIDs (overkill)
+		// Do not use more cores than we have Document IDs (overkill)
 		int cores = this.getReasonableNumberOfAvailableCores( metsGetter.getMetsData().size() );
 		
-		// Partition list of PIDs for each core
+		// Partition list of Document IDs for each core
 		List<List<String>> partitions = this.getPartitions(metsGetter.getMetsData(), cores);
 		
 		console("Number of partitions: " + partitions.size());

@@ -51,7 +51,7 @@ public class SolrExportManager extends ExportManager {
 
 	private static final Logger logger = LoggerFactory.getLogger(SolrExportManager.class);
 	
-	/** Number of Pids to process before a hard commit.
+	/** Number of Document IDs to process before a hard commit.
 	 */
 	private static final int INTERMEDIATE_COMMIT_COUNT = 100;
 
@@ -101,7 +101,7 @@ public class SolrExportManager extends ExportManager {
 		
 		StatisticsManager.getInstance().countFiles(count);
 		
-		logger.info(String.format("%d Mets PIDs have been found.", this.count));
+		logger.info(String.format("%d Mets Document IDs have been found.", this.count));
 
 		this.connectAll();
 		
@@ -150,15 +150,15 @@ public class SolrExportManager extends ExportManager {
 		
 		for (String metsAddress : metsData) {
 			
-			String pid = this.metsGetter.getUniqueName(metsAddress); // Note: pid must be processed differently for local
+			String documentID = this.metsGetter.getUniqueName(metsAddress); // Note: document ID must be processed differently for local
 
 			String content = metsGetter.getMetsContent(metsAddress);
 			
-			MetsXMLParserHandler metsHandler = MetsAltoReaderManager.parseMets(pid, content, this.dir, false, supportedMetsTypes);
+			MetsXMLParserHandler metsHandler = MetsAltoReaderManager.parseMets(documentID, content, this.dir, false, supportedMetsTypes);
 			
 			if (metsHandler.isSupported()) {
 			
-				DocList docList = this.handleMetsResult(metsHandler, pid, false);
+				DocList docList = this.handleMetsResult(metsHandler, documentID, false);
 				
 				if ( this.articleSolrManager.add( docList.articles ) ) {
 					// Count statistics if successful
@@ -178,7 +178,7 @@ public class SolrExportManager extends ExportManager {
 				}
 				
 			} else {
-				logger.info(String.format("METS with PID %s is not supported.", pid));
+				logger.info(String.format("METS with Document ID %s is not supported.", documentID));
 				StatisticsManager.getInstance().countCustom("Not Supported", 1);
 			}
 			
@@ -188,7 +188,7 @@ public class SolrExportManager extends ExportManager {
 			
 			i++;
 			
-			// Commit every X PIDs
+			// Commit every X Document IDs
 			// Actually never do that! Use auto commit maybe
 			if (i % INTERMEDIATE_COMMIT_COUNT == 0) {
 				this.commitAll();
@@ -203,10 +203,10 @@ public class SolrExportManager extends ExportManager {
 	private void exportParallel() {
 		
 		// Get the optimal number of cores
-		// Do not use more cores than we have PIDs (overkill)
+		// Do not use more cores than we have Document IDs (overkill)
 		int cores = this.getReasonableNumberOfAvailableCores( this.metsGetter.getMetsData().size() );
 		
-		// Partition list of PIDs for each core
+		// Partition list of Document IDs for each core
 		List<List<String>> partitions = this.getPartitions(this.metsGetter.getMetsData(), cores);
 		
 		console("Number of partitions: " + partitions.size());
@@ -242,7 +242,7 @@ public class SolrExportManager extends ExportManager {
 		
 	}
 	
-	private DocList handleMetsResult(MetsXMLParserHandler handler, String pid, boolean useTokenizer) {
+	private DocList handleMetsResult(MetsXMLParserHandler handler, String documentID, boolean useTokenizer) {
 		DocList docList = new DocList();
 	
 		try { // If anything fails, report the error. Mostly it can ba a corrupt file.
@@ -261,55 +261,55 @@ public class SolrExportManager extends ExportManager {
 				AltoXMLParserHandler handlerAlto = MetsAltoReaderManager.parseAlto(page, articleAltoBlockMap, articles, useTokenizer);
 	
 				// Handle Words
-				this.createDocWordsAlto(pid, page, handlerAlto, docList);
+				this.createDocWordsAlto(documentID, page, handlerAlto, docList);
 	
 				// Handle Page
-				this.createDocPages(pid, page, handlerAlto, docList);
+				this.createDocPages(documentID, page, handlerAlto, docList);
 			}
 			
 			// Handle Article
 			for (DivSection divSection : articles.values()) {
 				if (  !divSection.getText().isEmpty() ) {
-					SolrInputDocument solrDocument = this.createDocArticle(pid, divSection, handler);
+					SolrInputDocument solrDocument = this.createDocArticle(documentID, divSection, handler);
 					
 					// Add the lines for this article
 					
 					docList.articles.add(solrDocument);
 				} else {
-					logger.info(String.format("Skipped SolrDocument %s, %s, %s", pid, divSection.getDmdid(), divSection.getId()));
+					logger.info(String.format("Skipped SolrDocument %s, %s, %s", documentID, divSection.getDmdid(), divSection.getId()));
 					
 					StatisticsManager.getInstance().countSkipArticles(1);
 				}
 			}
 		
 		} catch (Exception e) {
-			logger.error(String.format("Mets %s failed to be parsed.", pid), e);
+			logger.error(String.format("Mets %s failed to be parsed.", documentID), e);
 			StatisticsManager.getInstance().countCustom("Mets Fail", 1);
 		}
 		
 		return docList;
 	}
 	
-	private void createDocPages(String pid, Alto page, AltoXMLParserHandler handlerAlto, DocList docList) {
+	private void createDocPages(String documentID, Alto page, AltoXMLParserHandler handlerAlto, DocList docList) {
 		String pageId = page.getFileid();
 		
 		SolrInputDocument doc = new SolrInputDocument();
 		
-		String routePrefix = String.format("%s!", pid);
+		String routePrefix = String.format("%s!", documentID);
 		
-		doc.addField("id", 		String.format("%s%s_%s", routePrefix, pid, pageId));
-		doc.addField("pid", 	pid);
+		doc.addField("id", 		String.format("%s%s_%s", routePrefix, documentID, pageId));
+		doc.addField("pid", 	documentID);
 		doc.addField("page", 	pageId);
 		
 		addIfNotEmpty(doc, "text_lines",	handlerAlto.getPageFullTextLines());
-		addIfNotEmpty(doc, "text_words",	this.createTextWordData(pid, page, handlerAlto));
+		addIfNotEmpty(doc, "text_words",	this.createTextWordData(documentID, page, handlerAlto));
 		
 		docList.altoPages.add(doc);
 	}
 	
 	
 	
-	private void createDocWordsAlto(String pid, Alto page, AltoXMLParserHandler handlerAlto, DocList docList) {
+	private void createDocWordsAlto(String documentID, Alto page, AltoXMLParserHandler handlerAlto, DocList docList) {
 		String pageId = page.getFileid();
 		
 		// Index of words containing the coordinates per page/alto
@@ -319,18 +319,18 @@ public class SolrExportManager extends ExportManager {
 		for (AltoWord altoWord : pageWords) {
 			SolrInputDocument doc = new SolrInputDocument();
 			
-			String routePrefix = String.format("%s!", pid);
+			String routePrefix = String.format("%s!", documentID);
 			
 			if ( altoWord.getId() != null ) {
 				doc.addField("id", String.format("%s%s_%s_%s", 
-						routePrefix, pid, pageId, altoWord.getId()));
+						routePrefix, documentID, pageId, altoWord.getId()));
 			} else {
 				// Use coordinates as unique key, because if manual tokenizer, we can have multiple token with same id.
 				doc.addField("id", String.format("%s%s_%s_%d_%d_%d_%d", 
-						routePrefix, pid, pageId, altoWord.getX(), altoWord.getY(), altoWord.getW(), altoWord.getH())); 
+						routePrefix, documentID, pageId, altoWord.getX(), altoWord.getY(), altoWord.getW(), altoWord.getH())); 
 			}
 
-			doc.addField("pid", pid);
+			doc.addField("pid", documentID);
 			doc.addField("article", altoWord.getArticle());
 			
 			// The blockId is required to locate the word in a block
@@ -364,12 +364,12 @@ public class SolrExportManager extends ExportManager {
 	 * Where attributes are HTML attributes such as article id, block id
 	 * and x, y, w, h coordinates. 
 	 * 
-	 * @param pid
+	 * @param documentID
 	 * @param page
 	 * @param handlerAlto
 	 * @return
 	 */
-	private String createTextWordData(String pid, Alto page, AltoXMLParserHandler handlerAlto) {
+	private String createTextWordData(String documentID, Alto page, AltoXMLParserHandler handlerAlto) {
 		StringBuilder sb = new StringBuilder();
 		
 		List<AltoWord> pageWords = handlerAlto.getPageWords();
@@ -381,17 +381,17 @@ public class SolrExportManager extends ExportManager {
 	}
 
 	
-	private SolrInputDocument createDocArticle(String pid , DivSection article, MetsXMLParserHandler handler) {
+	private SolrInputDocument createDocArticle(String documentID , DivSection article, MetsXMLParserHandler handler) {
 		SolrInputDocument doc = new SolrInputDocument();
 		
-		ArticleDocumentBuilder builder = ExportManager.getArticleDocumentBuilder(pid, article, handler);
+		ArticleDocumentBuilder builder = ExportManager.getArticleDocumentBuilder(documentID, article, handler);
 
-		String routePrefix = String.format("%s!", builder.getPid());
+		String routePrefix = String.format("%s!", builder.getDocumentID());
 		
-		doc.addField("id", 					String.format("%s%s_%s_%s", routePrefix, builder.getPid(), builder.getDmdId(), builder.getId()));
+		doc.addField("id", 					String.format("%s%s_%s_%s", routePrefix, builder.getDocumentID(), builder.getDmdId(), builder.getId()));
 		
 		doc.addField("article", 			builder.getDmdId());
-		doc.addField("pid", 				builder.getPid());
+		doc.addField("pid", 				builder.getDocumentID());
 		doc.addField("begin", 				builder.getId());
 		doc.addField("source", 				builder.getRecordIdentifier());
 		

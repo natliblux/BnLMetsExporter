@@ -82,7 +82,7 @@ public class DublinCoreExporter implements Exporter {
 	 *  @return True if the divSection has been successfully saved, false otherwise.
 	 */
 	@Override
-	public boolean save(DivSection divSection, String pid, MetsXMLParserHandler metsHandler, DocList docList) {
+	public boolean save(DivSection divSection, String documentID, MetsXMLParserHandler metsHandler, DocList docList) {
 		boolean success = false;
 		
 		// getText to skip illustrations without description.
@@ -90,19 +90,19 @@ public class DublinCoreExporter implements Exporter {
 		if (  !divSection.getText().isEmpty() ) {
 			PrimoDocument doc = null;
 			try {
-				doc = createPrimoArticle(pid, divSection, metsHandler);
+				doc = createPrimoArticle(documentID, divSection, metsHandler);
 				
 				docList.primoarticles.add(doc);
 				
-				logger.info(String.format("Created PrimoDocument %s, %s, %s", pid, doc.getDmdid(), doc.getId()));
-				logger.debug(String.format("Add to archive. PID = %s", pid));
+				logger.info(String.format("Created PrimoDocument %s, %s, %s", documentID, doc.getDmdid(), doc.getId()));
+				logger.debug(String.format("Add to archive. Document ID = %s", documentID));
 				
 				this.archiver.write(doc, archiverFilenameStrategy);
 				
 				success = true;
 				
 			} catch (IOException e) {
-				logger.error(String.format("Archiver failed to save PrimoDocument %s, %s, %s", pid, doc.getDmdid(), doc.getId()), e);
+				logger.error(String.format("Archiver failed to save PrimoDocument %s, %s, %s", documentID, doc.getDmdid(), doc.getId()), e);
 			} catch (Exception e) {
 				// For debug purpose of MARC code
 				e.printStackTrace();
@@ -110,7 +110,7 @@ public class DublinCoreExporter implements Exporter {
 			
 			
 		} else {
-			logger.info(String.format("Skipped PrimoDocument %s, %s, %s", pid, divSection.getDmdid(), divSection.getId()));
+			logger.info(String.format("Skipped PrimoDocument %s, %s, %s", documentID, divSection.getDmdid(), divSection.getId()));
 		}
 		
 		return success;
@@ -136,13 +136,13 @@ public class DublinCoreExporter implements Exporter {
 		return success;
 	}
 	
-	private PrimoDocument createPrimoArticle(String pid, DivSection article, MetsXMLParserHandler handler) {
+	private PrimoDocument createPrimoArticle(String documentID, DivSection article, MetsXMLParserHandler handler) {
 		
-		ArticleDocumentBuilder builder = ExportManager.getArticleDocumentBuilder(pid, article, handler);
+		ArticleDocumentBuilder builder = ExportManager.getArticleDocumentBuilder(documentID, article, handler);
 		
 		DublinCoreDocument dublinCoreDocument = builder.build();
 		
-		PrimoDocument doc = new PrimoDocument(builder.getId(), builder.getPid(), builder.getDmdId());
+		PrimoDocument doc = new PrimoDocument(builder.getId(), builder.getDocumentID(), builder.getDmdId());
 		
 		doc.getListRecords().getRecord().getMetadata().setDublinCoreDocument(dublinCoreDocument);
 		

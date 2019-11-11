@@ -24,7 +24,7 @@ public class Config {
 
 	private MetsGetter metsGetter;
 	
-	private String pidsFile;
+	private String documentIDsFile;
 	
 	private boolean randomly;
 	
@@ -45,8 +45,8 @@ public class Config {
 		this.dir = dir;
 	}
 	
-	public Config(String pidsFile, String dir, boolean randomly, String outputFile) {
-		this.pidsFile = pidsFile;
+	public Config(String documentIDsFile, String dir, boolean randomly, String outputFile) {
+		this.documentIDsFile = documentIDsFile;
 		this.dir = dir;
 		this.randomly = randomly;
 		this.outputFile = outputFile;
@@ -56,8 +56,8 @@ public class Config {
 		return metsGetter;
 	}
 
-	public String getPidsFile() {
-		return pidsFile;
+	public String getDocumentIDsFile() {
+		return documentIDsFile;
 	}
 
 	public boolean isRandomly() {

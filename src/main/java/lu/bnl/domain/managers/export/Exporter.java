@@ -26,7 +26,7 @@ public interface Exporter {
 
 	public boolean open();
 	
-	public boolean save(DivSection divSection, String pid, MetsXMLParserHandler metsHandler, DocList docList);
+	public boolean save(DivSection divSection, String documentID, MetsXMLParserHandler metsHandler, DocList docList);
 	
 	public boolean close();
 	

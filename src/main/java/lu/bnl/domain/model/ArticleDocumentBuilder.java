@@ -24,7 +24,7 @@ public class ArticleDocumentBuilder {
 	private String ark;
 	
 	private String id;
-	private String pid;
+	private String documentID;
 	private String dmdId;
 	private String recordIdentifier;
 	private String date;
@@ -50,9 +50,9 @@ public class ArticleDocumentBuilder {
 	//================================================================================
 	//================================================================================
 	
-	public ArticleDocumentBuilder(String id, String pid) {
+	public ArticleDocumentBuilder(String id, String documentID) {
 		this.id = id;
-		this.pid = pid;
+		this.documentID = documentID;
 	}
 	
 	public ArticleDocumentBuilder ark(String ark) {
@@ -150,8 +150,8 @@ public class ArticleDocumentBuilder {
 		return id;
 	}
 
-	public String getPid() {
-		return pid;
+	public String getDocumentID() {
+		return documentID;
 	}
 
 	public String getDmdId() {

@@ -28,7 +28,7 @@ import lu.bnl.reader.MetsGetter;
 
 /**
  * This MetsGetter is meant to be used with the BnL Keymaps service. Keymaps can
- * return METS metadata by ARK (or PID). Part of the metadata is the path of the
+ * return METS metadata by ARK. Part of the metadata is the path of the
  * METS file. Thus, the exporter must have physical access to the stored
  * METS/ALTO package which is managed by Keymaps.
  * 

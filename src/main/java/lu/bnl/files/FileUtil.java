@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 
@@ -62,20 +63,20 @@ public class FileUtil<T> {
 		return value.replaceAll("\\\\", separator).replaceFirst("^\\w\\:", "");
 	}
 	
-	public static List<String> readPids(String file, boolean randomly)  {
-		List<String> pids = null;
+	public static List<String> readDocumentIDs(String file, boolean randomly)  {
+		List<String> documentIDs = null;
 		
 		try {
-			pids = FileUtils.readLines( new File(file) );
+			documentIDs = FileUtils.readLines( new File(file), Charset.forName("UTF-8"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
 		if (randomly) {
-			Collections.shuffle(pids);
+			Collections.shuffle(documentIDs);
 		}
 		
-		return pids;
+		return documentIDs;
 	}
 	
 	public static File checkDir(String dir) {

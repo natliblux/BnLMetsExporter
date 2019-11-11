@@ -204,17 +204,17 @@ public class TarGzArchiver implements Archiver {
 	
 	/**
 	 * Returns a path to an XML filename from an PrimoDocument / article.
-	 * The XML filename is based on the pid, dmdid and id.
-	 * The path is  created by the PID, such that files are organised into 
+	 * The XML filename is based on the document ID, dmdid and id.
+	 * The path is  created by the document ID, such that files are organised into 
 	 * folders of about 1000 objects.
 	 * 
 	 * @param article
 	 * @return The file path.
 	 */
 	private String getFilenameFromPrimoDocument(PrimoDocument article) {
-		String pid 		= article.getPid();
-		String dmdid 	= article.getDmdid();
-		String id 		= article.getId();
+		String documentID 	= article.getDocumentID();
+		String dmdid 		= article.getDmdid();
+		String id 			= article.getId();
 		
 		String fileId	= article.getFileId();
 		String begin	= article.getBegin();
@@ -223,9 +223,9 @@ public class TarGzArchiver implements Archiver {
 			dmdid = "";
 		}
 		
-		String dir = pid.substring(pid.length() - 3) + "/" + pid; // Take the last 3 number of the PID and then the PID
+		String dir = documentID.substring(documentID.length() - 3) + "/" + documentID; // Take the last 3 number of the Document ID and then the Document ID
 		
-		return String.format("%s/%s-%s-%s.xml", dir, pid, dmdid, id);
+		return String.format("%s/%s-%s-%s.xml", dir, documentID, dmdid, id);
 	}
 	
 	/** 
@@ -236,13 +236,13 @@ public class TarGzArchiver implements Archiver {
 	 * @return The file path.
 	 */
 	private String getFilenameForOriginalDir(PrimoDocument article) {
-		String pid 		= article.getPid();
-		String dmdid 	= article.getDmdid();
-		String id 		= article.getId();
+		String documentID 	= article.getDocumentID();
+		String dmdid	 	= article.getDmdid();
+		String id 			= article.getId();
 		
-		String dir 		= pid;
+		String dir 			= documentID;
 		
-		return String.format("%s/%s-%s-%s.xml", dir, pid, dmdid, id);
+		return String.format("%s/%s-%s-%s.xml", dir, documentID, dmdid, id);
 	}
 
 	/**
@@ -253,9 +253,9 @@ public class TarGzArchiver implements Archiver {
 	 * @return The file path.
 	 */
 	private String getFilenameForArk(PrimoDocument article) {
-		String pid 		= article.getPid();
-		pid = pid.replace(":", "-");
-		pid = pid.replace("/", "-");
+		String documentID = article.getDocumentID();
+		documentID = documentID.replace(":", "-");
+		documentID = documentID.replace("/", "-");
 
 		String dmdid 	= article.getDmdid();
 		String id 		= article.getId();
@@ -264,9 +264,9 @@ public class TarGzArchiver implements Archiver {
 			dmdid = "";
 		}
 		
-		String dir = pid.substring(pid.length() - 3) + "/" + pid; // Take the last 3 number of the PID and then the PID
+		String dir = documentID.substring(documentID.length() - 3) + "/" + documentID; // Take the last 3 number of the Document ID and then the Document ID
 		
-		return String.format("%s/%s-%s-%s.xml", dir, pid, dmdid, id);
+		return String.format("%s/%s-%s-%s.xml", dir, documentID, dmdid, id);
 	}
 	
 }

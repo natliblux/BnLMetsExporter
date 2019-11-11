@@ -49,13 +49,13 @@ public class MetsAltoReaderManager {
 
 	private static final Logger logger = LoggerFactory.getLogger(MetsAltoReaderManager.class);
 	
-	public static MetsXMLParserHandler parseMets(String pid, String content, String dir, boolean useTokenizer, List<String> supportedMetsTypes) {
+	public static MetsXMLParserHandler parseMets(String documentID, String content, String dir, boolean useTokenizer, List<String> supportedMetsTypes) {
 		MetsXMLParserHandler handler = new MetsXMLParserHandler(dir, supportedMetsTypes);
 		
 		try {
 			XmlUtil.parseSax(content, handler, "UTF-8");
 		} catch (Exception e) {
-			logger.error(String.format("Error while parsing Mets %s file.", pid), e);
+			logger.error(String.format("Error while parsing Mets %s file.", documentID), e);
 		}
 		
 		return handler;
@@ -83,13 +83,13 @@ public class MetsAltoReaderManager {
 		return handler;
 	}
 	
-	public static String downloadMetsContent(String pid) {
+	public static String downloadMetsContent(String documentID) {
 		
 		String urlGetMets = AppConfigurationManager.getInstance().getExportConfig().metsGetter.url;
 		
 		String result = null;
 		try {
-			URIBuilder builder = new URIBuilder(urlGetMets).addParameter("pid", pid);
+			URIBuilder builder = new URIBuilder(urlGetMets).addParameter("pid", documentID);
 			
 			URL url = builder.build().toURL();
 			
@@ -98,8 +98,8 @@ public class MetsAltoReaderManager {
 
 			result = IOUtils.toString( httpConnection.getInputStream(), AppGlobal.ENCODING );
 			
-			String message = String.format("getMetsContent: HTTP Request %s for pid %s: %s %s", 
-					url.toString() ,pid, httpConnection.getResponseCode(), httpConnection.getResponseMessage());
+			String message = String.format("getMetsContent: HTTP Request %s for document ID %s: %s %s", 
+					url.toString() ,documentID, httpConnection.getResponseCode(), httpConnection.getResponseMessage());
 			logger.info(message);
 			
 			logger.debug("GetMetsFromUrl: Size of XML: " + result.length());
