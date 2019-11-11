@@ -111,9 +111,9 @@ public class PrimoExportManager extends ExportManager {
 				dir = path;
 			}
 			
-			System.out.println("THE DOCUMENT ID IS : " + documentID); // DEBUG
-			System.out.println("THE METSADDRESS IS : " + metsAddress); // DEBUG
-			System.out.println("THE METSLOCATION IS : " + path); // DEBUG
+			//System.out.println("THE DOCUMENT ID IS : " + documentID); // DEBUG
+			//System.out.println("THE METSADDRESS IS : " + metsAddress); // DEBUG
+			//System.out.println("THE METSLOCATION IS : " + path); // DEBUG
 			
 			String content = metsGetter.getMetsContent(metsAddress, path);
 			
