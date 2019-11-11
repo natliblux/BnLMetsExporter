@@ -294,16 +294,7 @@ public class BnLMetsExporter extends ParserClient {
 				console(String.format("[ABORT] A file named '%s' already exists. Use a different name or use -overwrite to overwrite the file(s).", outputExportFile));
 				
 				return;
-			}/* else {
-				// Check PID input file
-				File file = FileUtil.checkFile(INPUT_PIDS);
-				if (file == null) {
-					console("Input file for pids not found : " + INPUT_PIDS);
-					return;
-				} else {
-					console("File(s) will be exported into " + outputExportFile + " ...");
-				}
-			}*/
+			}
 		}
 		
 		// SPECIFIC SOLR CHECKS
