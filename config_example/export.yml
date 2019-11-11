@@ -156,6 +156,10 @@ metsGetter:
   url:  "http://my-server.com/getMetsXml"
   clazz: "lu.bnl.reader.LocalMetsGetterImpl"
 
+ark:
+  useIdAsArk: true
+  prefix: "https://my-server.com/"
+
 remoteIdentifier:
     enable: false
     url: "http://my-server.com/getRemoteId"

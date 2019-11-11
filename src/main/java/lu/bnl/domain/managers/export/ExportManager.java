@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2017-2018 Bibliothèque nationale de Luxembourg (BnL)
+ * Copyright (C) 2017-2019 Bibliothèque nationale de Luxembourg (BnL)
  *
  * This file is part of BnLMetsExporter.
  *
@@ -31,11 +31,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import lu.bnl.AppGlobal;
+import lu.bnl.configuration.AppConfigurationManager;
 import lu.bnl.domain.constants.MetsConstant;
 import lu.bnl.domain.constants.MetsTypeHandler;
 import lu.bnl.domain.managers.ExecutionTimeTracker;
 import lu.bnl.domain.managers.StatisticsManager;
-import lu.bnl.domain.managers.remote.RemoteIdentifierManager;
 import lu.bnl.domain.model.ArticleDocumentBuilder;
 import lu.bnl.domain.model.DivSection;
 import lu.bnl.domain.model.DmdSection;
@@ -125,22 +125,27 @@ public abstract class ExportManager {
 		String date = null;
 
 		List<String> isPartOfs = new ArrayList<>();
-		List<String> creators = new ArrayList<>();
+		List<String> creators  = new ArrayList<>();
 		List<String> languages = new ArrayList<>();
 
-		// Get ARK via the RemoteIdentifierManager
-		// TODO: CHANGE Config and or this since ARK can be the document ID
-		try {
-			RemoteIdentifierManager remoteIdentifierManager = RemoteIdentifierManager.getInstanceForConfig();
-			// Can be null if something went wrong or if enable = false
-			if (remoteIdentifierManager != null) {
-				ark = remoteIdentifierManager.getIdByPID(documentID, article);
-			}
-		} catch (Exception e) {
-			logger.error("Error during RemoteIdentifierManager.", e);
-		}
-		// System.out.println("ARK: " + ark); // Debug
+		if (AppConfigurationManager.getInstance().getExportConfig().ark.useIdAsArk == true) {
+			// Base
+			ark = documentID;
 
+			// Prefix
+			String prefix = AppConfigurationManager.getInstance().getExportConfig().ark.prefix;
+			ark = prefix + ark;
+
+			// Qualifier
+			if (article.getType().equalsIgnoreCase("ISSUE") || article.getType().equalsIgnoreCase("VOLUME")) {
+				// Issue/Volume level. Do nothing.
+			} else {
+				// Any Article level
+				ark += String.format("/articles/%s", article.getId());
+			}
+			System.out.println("ARK: " + ark); // Debug
+		}
+		
 		// Step 0 - Gather handlers, preferences and dmdSec objects
 		// ################################################################################
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2017-2018 Bibliothèque nationale de Luxembourg (BnL)
+ * Copyright (C) 2017-2019 Bibliothèque nationale de Luxembourg (BnL)
  *
  * This file is part of BnLMetsExporter.
  *
@@ -44,6 +44,10 @@ public class ExportConfig {
 	 */
 	public MetsGetterConfig metsGetter;
 	
+	/** Defines the ARK configuration.
+	 */
+	public ArkConfig ark;
+
 	/** Defines the URL to request the Identifier based on another id. 
 	 *  (Used by the BnL to convert PIDs to ARKs identifiers during a transition phase)
 	 */
@@ -161,6 +165,12 @@ public class ExportConfig {
 		if (this.metsGetter != null) {
 			stringBuilder.append( String.format(" - URL   : %s\n", Optional.ofNullable(this.metsGetter.url).orElse(notset) ));
 			stringBuilder.append( String.format(" - Class : %s\n", Optional.ofNullable(this.metsGetter.clazz).orElse(notset) ));
+		}
+
+		stringBuilder.append("- ARK:\n");
+		if (this.ark != null) {
+			stringBuilder.append( String.format(" - Use ID as ARK : %s\n", Boolean.toString(this.ark.useIdAsArk)) );
+			stringBuilder.append( String.format(" - Class         : %s\n", Optional.ofNullable(this.ark.prefix).orElse(notset) ));
 		}
 		
 		stringBuilder.append("- Remote Identifier:\n");
