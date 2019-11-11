@@ -113,11 +113,11 @@ public class BnLMetsExporter extends ParserClient {
 		// ================================================================================
 
 		groupCommands.addOption(OptionBuilder.hasOptionalArg().isRequired(false).withDescription(
-				"Export documents, given as a list of PIDS, for Primo or Solr. (-export <TARGET>, <TARGET can be 'primo', 'solr'>)")
+				"Export documents, given as a list of Document IDs, for Primo or Solr. (-export <TARGET>, <TARGET can be 'primo', 'solr'>)")
 				.withLongOpt(CliConstant.CMD_L_EXPORT).create(CliConstant.CMD_S_EXPORT));
 
-		addOptionalArgOption(options, CliConstant.OPTION_L_PIDS,
-				String.format("Input file for pids for remote download of METS files."));
+		addOptionalArgOption(options, CliConstant.OPTION_L_DOCIDS,
+				String.format("Input file for document IDs for remote download of METS files."));
 
 		addOptionalArgOption(options, CliConstant.OPTION_L_DIR, "The base directory.");
 
@@ -131,7 +131,7 @@ public class BnLMetsExporter extends ParserClient {
 				"Flag to override the output file if it already exists.");
 
 		addOptionalOption(options, CliConstant.OPTION_L_PARALLEL,
-				"Flag to compute PIDs in parallel. This will output multiple TARGZs files.");
+				"Flag to compute Document IDs in parallel. This will output multiple TARGZs files.");
 
 		// ================================================================================
 		// Clean
@@ -206,8 +206,12 @@ public class BnLMetsExporter extends ParserClient {
 			}
 		});
 
-		String[] commandList = { CliConstant.CMD_L_HELP, CliConstant.CMD_L_EXPORT, CliConstant.CMD_L_CLEAN,
-				CliConstant.CMD_L_TESTCONFIG };
+		String[] commandList = {
+			CliConstant.CMD_L_HELP,
+			CliConstant.CMD_L_EXPORT,
+			CliConstant.CMD_L_CLEAN,
+			CliConstant.CMD_L_TESTCONFIG
+		};
 
 		String commands = StringUtils.join(commandList, ", ");
 		String header = String.format("BnLMetsExporter %s / Solr %s \nAvailable commands:\n%s", AppVersion.VERSION,
@@ -252,7 +256,7 @@ public class BnLMetsExporter extends ParserClient {
 		}
 
 		String dir = cmd.getOptionValue(CliConstant.OPTION_L_DIR);
-		String pids = cmd.getOptionValue(CliConstant.OPTION_L_PIDS); // TODO: Rename to Items
+		String dids = cmd.getOptionValue(CliConstant.OPTION_L_DOCIDS);
 
 		MetsGetter metsGetter = null;
 		String metsGetterInputData = null;
@@ -261,7 +265,7 @@ public class BnLMetsExporter extends ParserClient {
 			metsGetter = MetsGetter.getInstanceForConfig();
 			console(String.format("Using MetsGetter: %s", metsGetter.getClass().getName()));
 
-			metsGetterInputData = metsGetter.validateInput(dir, pids);
+			metsGetterInputData = metsGetter.validateInput(dir, dids);
 			if (metsGetterInputData == null) {
 				console("Invalid Input. Directory or Items are wrong for the configured MetsGetter.");
 				return;
@@ -404,9 +408,8 @@ public class BnLMetsExporter extends ParserClient {
 		options.addOption(option);
 	}
 	
-	/** Export all PIDs for Primo using PrimoExporterManager.
+	/** Export all Document IDs for Primo using PrimoExporterManager.
 	 * 
-	 * @param pidContents
 	 * @param config
 	 */
 	private void exportForPrimo(Config config) {
@@ -414,9 +417,8 @@ public class BnLMetsExporter extends ParserClient {
 		primoExportManager.run(config.getMetsGetter());
 	}
 	
-	/** Export all PIDs to Solr using SolrExporterManager.
+	/** Export all Document IDs to Solr using SolrExporterManager.
 	 * 
-	 * @param pidContents
 	 * @param config
 	 */
 	private void exportForSolr(Config config) {
