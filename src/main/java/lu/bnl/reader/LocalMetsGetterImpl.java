@@ -84,14 +84,16 @@ public class LocalMetsGetterImpl extends MetsGetter {
 	 *  Return the entire METS file content.
 	 */
 	@Override
-	public String getMetsContent(String data) {
+	public String getMetsContent(String data, String path) {
+
+		String query = data;
 
 		String content = null;
 		
 		try {
-			content = new String (Files.readAllBytes( Paths.get(data) ));
+			content = new String (Files.readAllBytes( Paths.get(query) ));
 		} catch (IOException e) {
-			logger.error("Failed to read METS file at " + data, e);
+			logger.error("Failed to read METS file at " + query, e);
 			e.printStackTrace();
 		}
 		

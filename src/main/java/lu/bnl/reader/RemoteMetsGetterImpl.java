@@ -84,13 +84,15 @@ public class RemoteMetsGetterImpl extends MetsGetter {
 	 * Full URL will be www.myserver.com/getMets?pid=1234
 	 */
 	@Override
-	public String getMetsContent(String data) {
+	public String getMetsContent(String data, String path) {
+
+		String query = data;
 
 		String urlGetMets = AppConfigurationManager.getInstance().getExportConfig().metsGetter.url;
 		
 		String result = null;
 		try {
-			URIBuilder builder = new URIBuilder(urlGetMets).addParameter("pid", data);
+			URIBuilder builder = new URIBuilder(urlGetMets).addParameter("pid", query);
 			
 			URL url = builder.build().toURL();
 			
@@ -100,7 +102,7 @@ public class RemoteMetsGetterImpl extends MetsGetter {
 			result = IOUtils.toString( httpConnection.getInputStream(), AppGlobal.ENCODING );
 			
 			String message = String.format("getMetsContent: HTTP Request %s for pid %s: %s %s", 
-					url.toString() ,data, httpConnection.getResponseCode(), httpConnection.getResponseMessage());
+					url.toString() ,query, httpConnection.getResponseCode(), httpConnection.getResponseMessage());
 			logger.info(message);
 			
 			logger.debug("GetMetsFromUrl: Size of XML: " + result.length());

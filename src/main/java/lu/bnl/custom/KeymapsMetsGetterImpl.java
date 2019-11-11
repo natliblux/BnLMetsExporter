@@ -76,12 +76,14 @@ public class KeymapsMetsGetterImpl extends MetsGetter {
      * The data must be a path to the METS file. Return the entire METS file.
      */
     @Override
-    public String getMetsContent(String data) {
+    public String getMetsContent(String data, String path) {
+
+        String query = path;
 
         String content = null;
 
         // Find METS
-        List<File> files = FileFinder.findMetsFiles(data);
+        List<File> files = FileFinder.findMetsFiles(query);
         if (files.size() > 0) {
             // Read File Content from first found METS. All METS/ALTO package should only
             // have 1 METS file.
@@ -89,11 +91,11 @@ public class KeymapsMetsGetterImpl extends MetsGetter {
                 String metsPath = files.get(0).getPath();
                 content = new String(Files.readAllBytes(Paths.get(metsPath)));
             } catch (IOException e) {
-                logger.error("Failed to read METS file at " + data, e);
+                logger.error("Failed to read METS file at " + query, e);
                 e.printStackTrace();
             }
         } else {
-            logger.error("No METS file found in " + data);
+            logger.error("No METS file found in " + query);
         }
 
         return content;

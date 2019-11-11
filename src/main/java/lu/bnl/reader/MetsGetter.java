@@ -47,10 +47,11 @@ public abstract class MetsGetter {
 	
 	/** Get the content of the METS file as String.
 	 * 
-	 * @param data	Can be any string, such as a PID, URL or Path. This is decided by the implementation.
+	 * @param data	Should be an ID, resulting from the findAllMets. This is decided by the implementation.
+	 * @param path	Should be a path, to complement the data. This is decided by the implementation.
 	 * @return The METS file as String.
 	 */
-	public abstract String getMetsContent(String data);
+	public abstract String getMetsContent(String data, String path);
 
 	/** Return the unique name for a given data. 
 	 * 

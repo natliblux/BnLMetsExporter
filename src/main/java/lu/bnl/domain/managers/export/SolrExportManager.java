@@ -150,9 +150,20 @@ public class SolrExportManager extends ExportManager {
 		
 		for (String metsAddress : metsData) {
 			
-			String documentID = this.metsGetter.getUniqueName(metsAddress); // Note: document ID must be processed differently for local
+			String documentID 	= this.metsGetter.getUniqueName(metsAddress); // Note: document ID must be processed differently for local
+			String path 		= this.metsGetter.getMetsLocation(metsAddress);
 
-			String content = metsGetter.getMetsContent(metsAddress);
+			String dir = this.dir;
+			
+			// If the location of the METS is defined by the metsGetter then use it, otherwise use the argument dir
+			// LocalMetsGetterImpl found a METS at path/to/1-mets.xml and so the relative alto paths are path/to/
+			// RemoteMetsGetterImpl gets METS from server and so does not have a local repository. There the dir parameter is
+			// used to find alto files directly.
+			if (path != null) {
+				dir = path;
+			}
+
+			String content = metsGetter.getMetsContent(metsAddress, path);
 			
 			MetsXMLParserHandler metsHandler = MetsAltoReaderManager.parseMets(documentID, content, this.dir, false, supportedMetsTypes);
 			

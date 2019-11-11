@@ -115,11 +115,7 @@ public class PrimoExportManager extends ExportManager {
 			System.out.println("THE METSADDRESS IS : " + metsAddress); // DEBUG
 			System.out.println("THE METSLOCATION IS : " + path); // DEBUG
 			
-			// If the path if available, use it to retrieve the content, otherwise use the metsAddress.
-			// The path comes from the metsGetter.getMetsLocation and the return value depends on the implementation.
-			String metsContentRequestData = (path != null) ? path : metsAddress;
-			
-			String content = metsGetter.getMetsContent(metsContentRequestData);
+			String content = metsGetter.getMetsContent(metsAddress, path);
 			
 			MetsXMLParserHandler metsHandler = MetsAltoReaderManager.parseMets(documentID, content, dir, false, supportedMetsTypes);
 			
