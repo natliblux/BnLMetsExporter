@@ -143,7 +143,7 @@ public abstract class ExportManager {
 				// Any Article level
 				ark += String.format("/articles/%s", article.getId());
 			}
-			System.out.println("ARK: " + ark); // Debug
+			//System.out.println("ARK: " + ark); // Debug
 		}
 		
 		// Step 0 - Gather handlers, preferences and dmdSec objects
