@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import lu.bnl.AppGlobal;
 import lu.bnl.configuration.AppConfigurationManager;
 import lu.bnl.files.FileUtil;
+import lu.bnl.io.ArchiverFilenameStrategy;
 
 public class RemoteMetsGetterImpl extends MetsGetter {
 
@@ -129,5 +130,10 @@ public class RemoteMetsGetterImpl extends MetsGetter {
 	public String getMetsLocation(String data) {
 		return null;
 	}
+
+	@Override
+    public ArchiverFilenameStrategy getArchiverFilenameStrategy() {
+		return ArchiverFilenameStrategy.PID_DIGITOOL;
+    }
 
 }

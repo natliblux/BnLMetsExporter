@@ -23,13 +23,14 @@ import lu.bnl.AppGlobal;
 import lu.bnl.configuration.AppConfigurationManager;
 import lu.bnl.files.FileFinder;
 import lu.bnl.files.FileUtil;
+import lu.bnl.io.ArchiverFilenameStrategy;
 import lu.bnl.reader.MetsGetter;
 
 /**
- * This MetsGetter is meant to be used with the BnL Keymaps service.
- * Keymaps can return METS metadata by ARK (or PID). Part of the metadata
- * is the path of the METS file. Thus, the exporter must have physical 
- * access to the stored METS/ALTO package which is managed by Keymaps.
+ * This MetsGetter is meant to be used with the BnL Keymaps service. Keymaps can
+ * return METS metadata by ARK (or PID). Part of the metadata is the path of the
+ * METS file. Thus, the exporter must have physical access to the stored
+ * METS/ALTO package which is managed by Keymaps.
  * 
  */
 public class KeymapsMetsGetterImpl extends MetsGetter {
@@ -38,24 +39,24 @@ public class KeymapsMetsGetterImpl extends MetsGetter {
 
     @Override
     public String validateInput(String dir, String items) {
-		Boolean hasItems	= items != null;
-		Boolean isItemsOk	= FileUtil.checkFile(items) != null;
+        Boolean hasItems = items != null;
+        Boolean isItemsOk = FileUtil.checkFile(items) != null;
 
-		if (!isItemsOk) {
-			logger.info("Abording! Reason: You must provide a valid items file.");
-		}
+        if (!isItemsOk) {
+            logger.info("Abording! Reason: You must provide a valid items file.");
+        }
 
-		if (hasItems && isItemsOk) {
-			return items;
-		}
+        if (hasItems && isItemsOk) {
+            return items;
+        }
 
-		return null;
+        return null;
     }
 
     /**
      * Reads a file containing 1 ARK to process per line.
      * 
-     * @param path  The path to the file.
+     * @param path The path to the file.
      */
     @Override
     public void findAllMets(String path) {
@@ -65,30 +66,31 @@ public class KeymapsMetsGetterImpl extends MetsGetter {
             arks = FileUtils.readLines(new File(path), Charset.forName("UTF-8"));
         } catch (IOException e) {
             logger.error("Failed to read ARKs file at " + path, e);
-			e.printStackTrace();
+            e.printStackTrace();
         }
 
         this.setMetsData(arks);
     }
 
-    /** The data must be a path to the METS file.
-	 *  Return the entire METS file.
-	 */
+    /**
+     * The data must be a path to the METS file. Return the entire METS file.
+     */
     @Override
     public String getMetsContent(String data) {
-        
+
         String content = null;
 
         // Find METS
         List<File> files = FileFinder.findMetsFiles(data);
-        if (files.size() > 0 ) {
-            // Read File Content from first found METS. All METS/ALTO package should only have 1 METS file.
+        if (files.size() > 0) {
+            // Read File Content from first found METS. All METS/ALTO package should only
+            // have 1 METS file.
             try {
                 String metsPath = files.get(0).getPath();
-                content = new String (Files.readAllBytes( Paths.get(metsPath) ));
+                content = new String(Files.readAllBytes(Paths.get(metsPath)));
             } catch (IOException e) {
                 logger.error("Failed to read METS file at " + data, e);
-			    e.printStackTrace();
+                e.printStackTrace();
             }
         } else {
             logger.error("No METS file found in " + data);
@@ -106,15 +108,15 @@ public class KeymapsMetsGetterImpl extends MetsGetter {
     }
 
     /**
-     * Queries BnL's Keymaps service to get the path of the METS location.
-     * The string "{ark}" in the getMetsURL config is replaced by the ARK.
+     * Queries BnL's Keymaps service to get the path of the METS location. The
+     * string "{ark}" in the getMetsURL config is replaced by the ARK.
      * 
-     * @param data  ARK identifier of a document.
+     * @param data ARK identifier of a document.
      */
     @Override
     public String getMetsLocation(String data) {
         String urlGetMets = AppConfigurationManager.getInstance().getExportConfig().metsGetter.url;
-        urlGetMets = urlGetMets.replaceAll("{ark}", data);
+        urlGetMets = urlGetMets.replaceAll("\\{ark\\}", data);
 
         String result = null;
         try {
@@ -122,45 +124,55 @@ public class KeymapsMetsGetterImpl extends MetsGetter {
             URL url = builder.build().toURL();
 
             HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection();
-			httpConnection.setRequestMethod("GET");
+            httpConnection.setRequestMethod("GET");
 
-            result = IOUtils.toString( httpConnection.getInputStream(), AppGlobal.ENCODING );
-            
-            String message = String.format("getMetsLocation: HTTP Request %s for ARK %s: %s %s", 
-					url.toString() ,data, httpConnection.getResponseCode(), httpConnection.getResponseMessage());
+            result = IOUtils.toString(httpConnection.getInputStream(), AppGlobal.ENCODING);
+
+            String message = String.format("getMetsLocation: HTTP Request %s for ARK %s: %s %s", url.toString(), data,
+                    httpConnection.getResponseCode(), httpConnection.getResponseMessage());
+            System.out.println(message); // DEBUG
             logger.info(message);
-            
+
             logger.debug("getMetsLocation: Size of XML: " + result.length());
 
         } catch (MalformedURLException e) {
-			logger.error("getMetsLocation: An error has occured while requesting the METS.", e);
-		} catch (IOException e) {
-			logger.error("getMetsLocation: An error has occured while requesting the METS.", e);
-		} catch (URISyntaxException e) {
-			logger.error("getMetsLocation: An error has occured while requesting the METS.", e);
+            e.printStackTrace();
+            logger.error("getMetsLocation: An error has occured while requesting the METS.", e);
+        } catch (IOException e) {
+            e.printStackTrace();
+            logger.error("getMetsLocation: An error has occured while requesting the METS.", e);
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            logger.error("getMetsLocation: An error has occured while requesting the METS.", e);
         }
-        
+
         return this.extractPathFromResponse(result);
     }
 
-    /** Converts the String response to a Java Object using the GSON library in order
-	 *  to extract the ARK value.
-	 * 
-	 * @param response
-	 * @return
-	 */
-	private String extractPathFromResponse(String response) {
-		if (response != null) {
-			try {
-				ResponseMessage responseMessage = new Gson().fromJson(response, ResponseMessage.class);
-				return responseMessage.data.rootLocation;
-			} catch (Exception e) {
-				logger.error("Error during extraction of rootLocation from Response. Response:" + response);
-			}
-		}
-		
-		return null;
-	}
+    /**
+     * Converts the String response to a Java Object using the GSON library in order
+     * to extract the ARK value.
+     * 
+     * @param response
+     * @return
+     */
+    private String extractPathFromResponse(String response) {
+        if (response != null) {
+            try {
+                ResponseMessage responseMessage = new Gson().fromJson(response, ResponseMessage.class);
+                return responseMessage.data.rootLocation;
+            } catch (Exception e) {
+                logger.error("Error during extraction of rootLocation from Response. Response:" + response);
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public ArchiverFilenameStrategy getArchiverFilenameStrategy() {
+        return ArchiverFilenameStrategy.ARK;
+    }
 
     
 }

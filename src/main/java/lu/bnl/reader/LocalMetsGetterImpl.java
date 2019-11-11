@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import lu.bnl.files.FileFinder;
 import lu.bnl.files.FileUtil;
+import lu.bnl.io.ArchiverFilenameStrategy;
 
 public class LocalMetsGetterImpl extends MetsGetter {
 
@@ -125,4 +126,9 @@ public class LocalMetsGetterImpl extends MetsGetter {
 		return f.getParent();
 	}
 	
+	@Override
+    public ArchiverFilenameStrategy getArchiverFilenameStrategy() {
+		return ArchiverFilenameStrategy.ORIGINAL_DIR;
+    }
+
 }

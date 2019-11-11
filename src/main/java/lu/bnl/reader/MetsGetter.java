@@ -23,6 +23,7 @@ import java.util.List;
 
 import lu.bnl.configuration.AppConfigurationManager;
 import lu.bnl.configuration.MetsGetterConfig;
+import lu.bnl.io.ArchiverFilenameStrategy;
 
 public abstract class MetsGetter {
 
@@ -66,6 +67,12 @@ public abstract class MetsGetter {
 	 */
 	public abstract String getMetsLocation(String data);
 	
+	/** Returns the ArchiverFilenameStrategy for saving the exported documents.
+	 * 
+	 * @return
+	 */
+	public abstract ArchiverFilenameStrategy getArchiverFilenameStrategy();
+
 	public List<String> getMetsData() {
 		return metsData;
 	}
