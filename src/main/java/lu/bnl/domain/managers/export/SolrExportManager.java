@@ -165,7 +165,7 @@ public class SolrExportManager extends ExportManager {
 
 			String content = metsGetter.getMetsContent(metsAddress, path);
 			
-			MetsXMLParserHandler metsHandler = MetsAltoReaderManager.parseMets(documentID, content, this.dir, false, supportedMetsTypes);
+			MetsXMLParserHandler metsHandler = MetsAltoReaderManager.parseMets(documentID, content, dir, false, supportedMetsTypes);
 			
 			if (metsHandler.isSupported()) {
 			
