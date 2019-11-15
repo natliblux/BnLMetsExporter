@@ -27,6 +27,7 @@ import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 import com.thoughtworks.xstream.annotations.XStreamOmitField;
 
 import lu.bnl.configuration.AppConfigurationManager;
+import lu.bnl.util.ArkUtils;
 
 /*
  * <OAI-PMH 
@@ -93,10 +94,16 @@ public class PrimoDocument {
 		
 		this.listRecords = new ListRecords();
 
-		String recordIdentifierBase = AppConfigurationManager.getInstance().getExportConfig().primo.recordIdentifier;
-		String recordIdentifier = String.format("%s:%s-%s", recordIdentifierBase, documentID, id);
-		
-		this.listRecords.getRecord().getHeader().setIdentifier( recordIdentifier );
+		String ark = ArkUtils.getArkForArticle(documentID, null, id);
+		if (ark != null) {
+			this.listRecords.getRecord().getHeader().setIdentifier( ark );
+		} else {
+			String recordIdentifierBase = AppConfigurationManager.getInstance().getExportConfig().primo.recordIdentifier;
+			String recordIdentifier = String.format("%s:%s-%s", recordIdentifierBase, documentID, id);
+
+			this.listRecords.getRecord().getHeader().setIdentifier( recordIdentifier );
+		}
+
 	}
 
 	public String getDocumentID() {
