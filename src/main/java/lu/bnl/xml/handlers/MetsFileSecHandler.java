@@ -120,6 +120,8 @@ public class MetsFileSecHandler extends DefaultHandler {
 			path = path.replaceFirst("file://", "").replace("\\", "/");
 			
 			if (this.dir != null) {
+				// We are not using relative paths anymore, so remove the starting "./".
+				path = path.replace("./", "/");
 				path = this.dir + path;
 			}
 
