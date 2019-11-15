@@ -31,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import lu.bnl.AppGlobal;
-import lu.bnl.configuration.AppConfigurationManager;
 import lu.bnl.domain.constants.MetsConstant;
 import lu.bnl.domain.constants.MetsTypeHandler;
 import lu.bnl.domain.managers.ExecutionTimeTracker;
@@ -40,6 +39,7 @@ import lu.bnl.domain.model.ArticleDocumentBuilder;
 import lu.bnl.domain.model.DivSection;
 import lu.bnl.domain.model.DmdSection;
 import lu.bnl.reader.MetsGetter;
+import lu.bnl.util.ArkUtils;
 import lu.bnl.xml.MetsXMLParserHandler;
 
 public abstract class ExportManager {
@@ -116,11 +116,11 @@ public abstract class ExportManager {
 		String wordText = article.getHtmlizedWords(true);
 
 		// Define variables
-
-		String ark = null;
-		String title = null;
-		String alternative = null;
-		String publisher = null;
+		
+		String ark				= ArkUtils.getArkForArticle(documentID, article.getType(), article.getId());
+		String title 			= null;
+		String alternative 		= null;
+		String publisher 		= null;
 		String recordIdentifier = null;
 		String date = null;
 
@@ -128,24 +128,6 @@ public abstract class ExportManager {
 		List<String> creators  = new ArrayList<>();
 		List<String> languages = new ArrayList<>();
 
-		if (AppConfigurationManager.getInstance().getExportConfig().ark.useIdAsArk == true) {
-			// Base
-			ark = documentID;
-
-			// Prefix
-			String prefix = AppConfigurationManager.getInstance().getExportConfig().ark.prefix;
-			ark = prefix + ark;
-
-			// Qualifier
-			if (article.getType().equalsIgnoreCase("ISSUE") || article.getType().equalsIgnoreCase("VOLUME")) {
-				// Issue/Volume level. Do nothing.
-			} else {
-				// Any Article level
-				ark += String.format("/articles/%s", article.getId());
-			}
-			//System.out.println("ARK: " + ark); // Debug
-		}
-		
 		// Step 0 - Gather handlers, preferences and dmdSec objects
 		// ################################################################################
 
