@@ -94,15 +94,10 @@ public class PrimoDocument {
 		
 		this.listRecords = new ListRecords();
 
-		String ark = ArkUtils.getArkForArticle(documentID, null, id);
-		if (ark != null) {
-			this.listRecords.getRecord().getHeader().setIdentifier( ark );
-		} else {
-			String recordIdentifierBase = AppConfigurationManager.getInstance().getExportConfig().primo.recordIdentifier;
-			String recordIdentifier = String.format("%s:%s-%s", recordIdentifierBase, documentID, id);
+		String recordIdentifierBase = AppConfigurationManager.getInstance().getExportConfig().primo.recordIdentifier;
+		String recordIdentifier = String.format("%s/%s/%s", recordIdentifierBase, documentID, id);
 
-			this.listRecords.getRecord().getHeader().setIdentifier( recordIdentifier );
-		}
+		this.listRecords.getRecord().getHeader().setIdentifier( recordIdentifier );
 
 	}
 
