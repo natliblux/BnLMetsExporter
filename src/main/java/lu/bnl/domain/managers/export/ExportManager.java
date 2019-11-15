@@ -127,7 +127,7 @@ public abstract class ExportManager {
 		List<String> isPartOfs = new ArrayList<>();
 		List<String> creators  = new ArrayList<>();
 		List<String> languages = new ArrayList<>();
-
+		
 		// Step 0 - Gather handlers, preferences and dmdSec objects
 		// ################################################################################
 
@@ -304,7 +304,7 @@ public abstract class ExportManager {
 				.languages(languages)
 				.type(type)
 				.isArticle(currentMetsTypeHandler.isArticle(type))
-				.panel(currentMetsTypeHandler.getPanel(type));
+				.panel(currentMetsTypeHandler.getPanel(type)); // TODO: Remove because not needed anymore
 		
 		controlBuilderQuality(builder);
 

@@ -178,9 +178,9 @@ exportSolr:
   - monograph
 
 primo:
-  oaiHostURL: "http://www.my-viewer-website.com/OAI"
+  oaiHostURL: "http://www.my-viewer-website.com"
   recordIdentifier: my-identifier
-  hasVersionPattern: "{{host}}/my-service?issue={{pid}}&article={{id}}&panel={{panel}}"
+  hasVersionPattern: "{{host}}/{{documentId}}/articles/{{id}}"
 
 solr:
   zkHost: zk-host-1:2181,zk-host-2:2181,zk-host-3:2181
