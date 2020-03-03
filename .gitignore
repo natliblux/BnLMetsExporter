@@ -1,7 +1,8 @@
-# Eclipse
+# IDE
 .classpath
 .project
 .settings/
+.vscode/
 
 # Maven
 target/
@@ -10,3 +11,4 @@ target/
 logs/
 examples/
 config/
+dist/
