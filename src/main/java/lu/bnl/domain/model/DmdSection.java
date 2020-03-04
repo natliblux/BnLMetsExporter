@@ -235,6 +235,25 @@ public class DmdSection {
 		
 		return result;
 	}
+
+	/**
+	 * Returns the part number of the issue.
+	 * 
+	 * @return
+	 */
+	public String getPartNumber() {
+		
+		String partNumber = null;
+
+		for (Pair pair : this.titleInfoParts) {
+			//System.out.println(String.format("Pair = %s : %s", pair.key, pair.value)); // DEBUG
+			if ( pair.key.equalsIgnoreCase( MetsConstant.TAG_MODS_PARTNUMBER ) ) {
+				partNumber = pair.value;
+			}
+		}
+
+		return partNumber;
+	}
 	
 	public String getTitleFromMarc() {
 		List<String> values = getSubFieldsValueForMarc(MetsConstant.ATTR_MARC_TAG_TITLE_245, 

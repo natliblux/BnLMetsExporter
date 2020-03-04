@@ -116,6 +116,7 @@ public abstract class ExportManager {
 		
 		String ark				= null;
 		String title 			= null;
+		String alternative		= null;
 		String publisher 		= null;
 		String recordIdentifier = null;
 		String date 			= null;
@@ -179,7 +180,7 @@ public abstract class ExportManager {
 			
 			title = dmd.getTitle();
 			//logger.info("1: TITLE: " + title);
-			
+
 			// CREATOR
 
 			creators = dmd.getCreators();
@@ -248,6 +249,10 @@ public abstract class ExportManager {
 				
 				if (isPartOfs.isEmpty())
 					isPartOfs = collectionDmd.getIsPartOfs();
+
+				// LEGACY data has this info in MDOSMD_ISSUE
+				if (alternative == null)
+					alternative = collectionDmd.getPartNumber();
 			}
 			
 			// Print MODS
@@ -262,6 +267,10 @@ public abstract class ExportManager {
 				
 				if (StringUtils.isBlank(publisher) || useCollection)
 					publisher = dmdSectionPrint.getPublisher();
+
+				// NEW data has this info in MODSMD_PRINT
+				if (alternative == null)
+					alternative = dmdSectionPrint.getPartNumber();
 			}
 			
 		}
@@ -277,6 +286,7 @@ public abstract class ExportManager {
 				.lineText(lineText)
 				.wordText(wordText)
 				.title(title)
+				.alternative(alternative)
 				.creators(creators)
 				.languages(languages)
 				.type(type)

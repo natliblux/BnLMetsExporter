@@ -36,6 +36,7 @@ public class ArticleDocumentBuilder {
 	private String lineText;
 	private String wordText; // large string containing all "HTMLized ALTO" <w >word</w>
 	private String title;
+	private String alternative;
 	
 	private List<String> creators;
 	
@@ -104,6 +105,11 @@ public class ArticleDocumentBuilder {
 		return this;
 	}
 	
+	public ArticleDocumentBuilder alternative(String alternative) {
+		this.alternative = alternative;
+		return this;
+	}
+
 	public ArticleDocumentBuilder creators(List<String> creators) {
 		this.creators = creators;
 		return this;
@@ -182,6 +188,10 @@ public class ArticleDocumentBuilder {
 
 	public String getTitle() {
 		return title;
+	}
+
+	public String getAlternative() {
+		return alternative;
 	}
 
 	public List<String> getCreators() {

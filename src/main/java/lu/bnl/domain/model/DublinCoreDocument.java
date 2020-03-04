@@ -96,6 +96,10 @@ public class DublinCoreDocument {
 	//Example: <dc:title>Allerseelen.</dc:title>
 	@XStreamAlias("dc:title")
 	private String title;
+
+	// Example: <dcterms:alternative>Jg. 1, n° Heft 1</dcterms:alternative> // Depends on Configuration
+	@XStreamAlias("dcterms:alternative")
+	private String alternative;
 	
 	//Example: <dc:creator>M. Ch.</dc:creator>
 	@XStreamImplicit(itemFieldName="dc:creator")
@@ -136,6 +140,8 @@ public class DublinCoreDocument {
 		this.isPartOfs = builder.getIsPartOfs();
 		
 		this.title = builder.getTitle();
+
+		this.alternative = builder.getAlternative();
 		
 		this.creators = builder.getCreators();
 		
@@ -260,6 +266,14 @@ public class DublinCoreDocument {
 
 	public void setTitle(String title) {
 		this.title = title;
+	}
+
+	public String getAlternative() {
+		return alternative;
+	}
+
+	public void setAlternative(String alternative) {
+		this.alternative = alternative;
 	}
 
 	public List<String> getCreators() {
