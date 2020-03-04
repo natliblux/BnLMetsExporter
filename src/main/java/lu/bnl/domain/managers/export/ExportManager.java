@@ -18,8 +18,11 @@
  *******************************************************************************/
 package lu.bnl.domain.managers.export;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -42,26 +45,26 @@ import lu.bnl.xml.MetsXMLParserHandler;
 public abstract class ExportManager {
 
 	private static final Logger logger = LoggerFactory.getLogger(ExportManager.class);
-	
+
 	private ExecutionTimeTracker executionTimeTracker;
 
 	// Time Tracker
-	//================================================================================
-	
+	// ================================================================================
+
 	public long startGlobal;
-	
+
 	public int count;
-	
+
 	public ExportManager() {
 		this.executionTimeTracker = new ExecutionTimeTracker();
 	}
-	
-	public abstract void run(MetsGetter metsGetter);	
-	
+
+	public abstract void run(MetsGetter metsGetter);
+
 	protected void console(String message) {
 		this.executionTimeTracker.console(message);
 	}
-	
+
 	protected ExecutionTimeTracker getExecutionTimeTracker() {
 		return this.executionTimeTracker;
 	}
@@ -69,62 +72,63 @@ public abstract class ExportManager {
 	protected int getRuntimeCores() {
 		int cores = Runtime.getRuntime().availableProcessors();
 		console(String.format("%d cores available.", cores));
-		
+
 		return cores;
 	}
-	
+
 	protected int getReasonableNumberOfAvailableCores(int workload) {
 		return Math.min(getRuntimeCores() - 1, workload);
 	}
-	
+
 	protected List<List<String>> getPartitions(List<String> pidContentLists, int cores) {
 		int partitionSize = pidContentLists.size() / cores;
 		List<List<String>> partitions = new LinkedList<List<String>>();
 		for (int i = 0; i < pidContentLists.size(); i += partitionSize) {
 			List<String> sublist = pidContentLists.subList(i, Math.min(i + partitionSize, pidContentLists.size()));
-		    partitions.add(sublist);
-		    
-		    console(String.format(" - Partition %d : %d PIDs", i, sublist.size()));
+			partitions.add(sublist);
+
+			console(String.format(" - Partition %d : %d PIDs", i, sublist.size()));
 		}
-		
+
 		return partitions;
 	}
-	
+
 	protected void printStats() {
 		console(""); // Go next line in console, because or stopETA doing same line return
 
 		long duration = this.getExecutionTimeTracker().stop(startGlobal, "[All parsed]");
 
 		StatisticsManager.getInstance().logStatistics();
-		
+
 		double avg = (((double) duration) / ((double) count));
 		console(String.format("Average time/file : %.2f s", avg));
 
 		double hours = (AppGlobal.FILES_TOTAL * avg) / (60 * 60);
 		console(String.format("Projection for %d files: %.2f h = %.2f days.", AppGlobal.FILES_TOTAL, hours, (hours / 24)));
 	}
-	
-	public static ArticleDocumentBuilder getArticleDocumentBuilder(String pid, DivSection article, MetsXMLParserHandler handler) {
-		String id 		= article.getId();
-		String text 	= article.getText();
-		String type 	= article.getType();
-		
+
+	public static ArticleDocumentBuilder getArticleDocumentBuilder(String pid, DivSection article,
+			MetsXMLParserHandler handler) {
+		String id = article.getId();
+		String text = article.getText();
+		String type = article.getType();
+
 		String lineText = article.getTextInLineFormat();
-		String wordText = article.getHtmlizedWords(true);	
-		
+		String wordText = article.getHtmlizedWords(true);
+
 		// Define variables
-		
-		String ark				= null;
-		String title 			= null;
-		String alternative		= null;
-		String publisher 		= null;
+
+		String ark = null;
+		String title = null;
+		String alternative = null;
+		String publisher = null;
 		String recordIdentifier = null;
-		String date 			= null;
-		
+		String date = null;
+
 		List<String> isPartOfs = new ArrayList<>();
-		List<String> creators  = new ArrayList<>();
-		List<String> languages = new ArrayList<>(); 
-		
+		List<String> creators = new ArrayList<>();
+		List<String> languages = new ArrayList<>();
+
 		// Get ARK via the RemoteIdentifierManager
 		try {
 			RemoteIdentifierManager remoteIdentifierManager = RemoteIdentifierManager.getInstanceForConfig();
@@ -135,118 +139,120 @@ public abstract class ExportManager {
 		} catch (Exception e) {
 			logger.error("Error during RemoteIdentifierManager.", e);
 		}
-		//System.out.println("ARK: " + ark); // Debug
-		
+		// System.out.println("ARK: " + ark); // Debug
+
 		// Step 0 - Gather handlers, preferences and dmdSec objects
 		// ################################################################################
-		
+
 		MetsTypeHandler currentMetsTypeHandler = handler.getMetsTypeHandler();
-		
+
 		// Select the preferred DMDID
 		String dmdid = article.getDmdid();
-		
+
 		String preferedDmdId = ExportManager.choosePreferredDmdId(dmdid, type, handler);
 		if (preferedDmdId != null) {
 			dmdid = preferedDmdId;
-			//System.out.println("Preferred: " + dmdid);
+			// System.out.println("Preferred: " + dmdid);
 			logger.debug("Preferred: " + dmdid);
 		}
-		
+
 		// Get the preferred DmdSection
 		DmdSection dmd = handler.getDmdSection(dmdid);
-		
+
 		// Careful! dmdSec Issue is only for Newspaper and Serials
 		// 2018, replaced by MODSMD_COLLECTION below with backup to MODSMD_ISSUE?
-		//DmdSection issueDmd = handler.getDmdSectionIssue();
-		
+		// DmdSection issueDmd = handler.getDmdSectionIssue();
+
 		// Priority is MODSMD_COLLECTION
 		// 1) If it does not exists, then try MODSMD_ISSUE
 		// 2) Otherwise it will be null
 		boolean useCollection = true;
-		
+
 		DmdSection collectionDmd = handler.getDmdSectionCollection();
 		if (collectionDmd == null) {
 			useCollection = false;
 			collectionDmd = handler.getDmdSectionIssue();
 		}
-		
+
 		// Step 1 - Get metadata from current DMDSec element
 		// ################################################################################
-		
+
 		// Get data from the preferred DmdSection
 		if (dmd != null) {
 
 			// TITLE
-			
+
 			title = dmd.getTitle();
-			//logger.info("1: TITLE: " + title);
+			// logger.info("1: TITLE: " + title);
 
 			// CREATOR
 
 			creators = dmd.getCreators();
-			
+
 			// LANGUAGE
-			
+
 			languages = dmd.getLanguages();
 
 			// DATE
-			//date = dmd.getDateIssued(); // Commented because handled below 
-			
+			// date = dmd.getDateIssued(); // Commented because handled below
+
 			// PUBLISHER
-			//publisher = dmd.getPublisher();
-			
+			// publisher = dmd.getPublisher();
+
 			// ISPARTOF
-			
+
 			// FIX FOR INDEPLUX
 			// NEED TO REVISE DMDSECTION getIsPartOfs in case of MARC vs MODS
-			/*if (collectionDmd != null) {
-				isPartOfs = collectionDmd.getIsPartOfs();
-			}*/
-			
+			/*
+			 * if (collectionDmd != null) { isPartOfs = collectionDmd.getIsPartOfs(); }
+			 */
+
 			if (dmdid.contains("MARCMD")) {
-				System.out.println(title + " ; " + creators.size() + " ; " + languages.size() + " ; " + date + " ; " + isPartOfs.size() + " ; " + publisher);
+				System.out.println(title + " ; " + creators.size() + " ; " + languages.size() + " ; " + date + " ; "
+						+ isPartOfs.size() + " ; " + publisher);
 			}
-			
+
 		}
-		
+
 		// Check empty values and take from other DmdSections if needed:
-		
+
 		// Fix Title if empty
 		if (StringUtils.isBlank(title)) {
 			// 1st cascade, mods null use LABEL attribute
 			title = article.getLabel();
-			
+
 			if (StringUtils.isBlank(title)) {
 				// 2nd cascade, use a constant type-dependant
-				title = currentMetsTypeHandler.getTitle( type );
+				title = currentMetsTypeHandler.getTitle(type);
 			}
 		}
-		
-		//logger.info("2: TITLE: " + title);
-		
+
+		// logger.info("2: TITLE: " + title);
+
 		// IMPORTANT NOTE:
 		// If some information has not been found in the preferred DmdSection,
 		// then the information can be extracted from the default MODS DmdSection.
 		// This can be done for: recordIdentifier, date, isPartOf, publisher.
-		
-		// Step 2 - Complete the metadata with MODSMD_COLLECTION (or MODSMD_ISSUE) and MODSMD_PRINT
+
+		// Step 2 - Complete the metadata with MODSMD_COLLECTION (or MODSMD_ISSUE) and
+		// MODSMD_PRINT
 		// ################################################################################
-		
+
 		boolean shouldCompleteWithMods = true;
-		
+
 		if (shouldCompleteWithMods) {
-			
+
 			// Issue MODS
-			//DmdSection dmdIssue = handler.getDmdSectionIssue();
-			
+			// DmdSection dmdIssue = handler.getDmdSectionIssue();
+
 			// This is for backward compatibility to documents with MODSMD_ISSUE
 			if (collectionDmd != null) {
 				if (StringUtils.isBlank(recordIdentifier))
 					recordIdentifier = collectionDmd.getRecordIdentifer();
-				
+
 				if (StringUtils.isBlank(date))
 					date = collectionDmd.getDateIssued();
-				
+
 				if (isPartOfs.isEmpty())
 					isPartOfs = collectionDmd.getIsPartOfs();
 
@@ -254,23 +260,43 @@ public abstract class ExportManager {
 				if (alternative == null)
 					alternative = collectionDmd.getPartNumber();
 			}
-			
+
 			// Print MODS
 			DmdSection dmdSectionPrint = handler.getDmdSectionPrint();
-			
+
 			if (dmdSectionPrint != null) {
 				if (StringUtils.isBlank(recordIdentifier) || useCollection)
 					recordIdentifier = dmdSectionPrint.getRecordIdentifer();
-				
+
 				if (StringUtils.isBlank(date) || useCollection)
 					date = dmdSectionPrint.getDateIssued();
-				
+
 				if (StringUtils.isBlank(publisher) || useCollection)
 					publisher = dmdSectionPrint.getPublisher();
 
 				// NEW data has this info in MODSMD_PRINT
-				if (alternative == null)
+				if (alternative == null) {
 					alternative = dmdSectionPrint.getPartNumber();
+				}
+					
+			}
+
+			if (date != null) {
+				try {
+					Date dateObject = new SimpleDateFormat("yyyy-MM-dd").parse(date);
+					String year = new SimpleDateFormat("yyyy").format(dateObject);
+				
+					if (alternative != null) {
+						alternative = String.format("%s (%s)", alternative, year);
+					} else {
+						alternative = String.format("%s", year);
+					}
+
+				} catch (ParseException e) {
+					logger.error("Failed to convert date for the alternative title.", e);
+				}
+
+
 			}
 			
 		}
@@ -293,6 +319,8 @@ public abstract class ExportManager {
 				.isArticle(currentMetsTypeHandler.isArticle(type))
 				.panel(currentMetsTypeHandler.getPanel(type));
 		
+		controlBuilderQuality(builder);
+
 		return builder;
 	}
 	
@@ -364,4 +392,33 @@ public abstract class ExportManager {
 		}
 	}
 	
+	private static void controlBuilderQuality(ArticleDocumentBuilder builder) {
+		testString(builder.getArk(), "ARK");
+		testString(builder.getDmdId(), "DMDID");
+		testString(builder.getRecordIdentifier(), "RecordIdentifier");
+		testString(builder.getDate(), "Date");
+		testStringList(builder.getIsPartOfs(), "IsPartOf");
+		testString(builder.getPublisher(), "Publisher");
+		//testString(builder.getText(), "Text");
+		//testString(builder.getLineText(), "Line Text");
+		//testString(builder.getWordText(), "Word Text");
+		testString(builder.getTitle(), "Title");
+		testString(builder.getAlternative(), "Alternative");
+		//testStringList(builder.getCreators(), "Creator");
+		//testStringList(builder.getLanguages(), "Language");
+		testString(builder.getType(), "Type");
+	}
+
+	private static void testString(String data, String label) {
+		if ( StringUtils.isBlank(data) ) {
+			logger.error(String.format("Missing %s , Value: %s", label, data));
+		}
+	}
+
+	private static void testStringList(List<String> items, String label) {
+		if (items.size() == 0) {
+			logger.error(String.format("Missing %s , Empty List", label));
+		}
+	}
+
 }
