@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2017-2019 Bibliotèque nationale de Luxembourg (BnL)
+ * Copyright (C) 2017-2020 Bibliotèque nationale de Luxembourg (BnL)
  *
  * This file is part of BnLMetsExporter.
  *
