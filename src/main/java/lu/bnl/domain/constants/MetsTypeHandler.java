@@ -23,6 +23,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
+
 import lu.bnl.configuration.MetsTypeConfig;
 
 public class MetsTypeHandler {
@@ -70,7 +72,7 @@ public class MetsTypeHandler {
 	 */
 	public String getTitle(String typeName) {
 		MetsTypeConfig config = this.metsTypeConfigMap.get(typeName);
-		if (config == null) {
+		if (config == null || StringUtils.isBlank(config.title)) {
 			return this.getDefaultTitle();
 		} else {
 			return config.title;
