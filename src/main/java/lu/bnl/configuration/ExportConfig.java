@@ -196,8 +196,10 @@ public class ExportConfig {
 		
 		stringBuilder.append("- Primo:\n");
 		if (this.primo != null) {
-			stringBuilder.append( String.format(" - OAI Host URL       : %s\n", Optional.ofNullable(this.primo.oaiHostURL).orElse(notset) ));
-			stringBuilder.append( String.format(" - Record Identifier  : %s\n", Optional.ofNullable(this.primo.recordIdentifier).orElse(notset) ));
+			stringBuilder.append( String.format(" - OAI Host URL           : %s\n", Optional.ofNullable(this.primo.oaiHostURL).orElse(notset) ));
+			stringBuilder.append( String.format(" - Record Identifier      : %s\n", Optional.ofNullable(this.primo.recordIdentifier).orElse(notset) ));
+			stringBuilder.append( String.format(" - HasVersion Pattern     : %s\n", Optional.ofNullable(this.primo.hasVersionPattern).orElse(notset) )); 
+			stringBuilder.append( String.format(" - Alternative Title Code : %s\n", Optional.ofNullable(this.primo.alternativeTitleCode).orElse(notset) )); 
 		}
 		
 		stringBuilder.append("- Solr:\n");

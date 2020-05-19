@@ -31,5 +31,9 @@ public class PrimoConfig {
 	/** The pattern to use for creating the hasVersion tag.
 	 */
 	public String hasVersionPattern;
+
+	/** Code for alternativeTitle if the partNumber is not valid.
+	 */
+	public String alternativeTitleCode;
 	
 }

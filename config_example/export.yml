@@ -181,6 +181,7 @@ primo:
   oaiHostURL: "http://www.my-viewer-website.com"
   recordIdentifier: my-identifier
   hasVersionPattern: "{{host}}/{{documentId}}/articles/{{id}}"
+  alternativeTitleCode: "Full Text"
 
 solr:
   zkHost: zk-host-1:2181,zk-host-2:2181,zk-host-3:2181
