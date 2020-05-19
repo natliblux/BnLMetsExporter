@@ -25,12 +25,15 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import lu.bnl.AppGlobal;
+import lu.bnl.configuration.AppConfigurationManager;
 import lu.bnl.domain.constants.MetsConstant;
 import lu.bnl.domain.constants.MetsTypeHandler;
 import lu.bnl.domain.managers.ExecutionTimeTracker;
@@ -268,23 +271,42 @@ public abstract class ExportManager {
 					
 			}
 
-			if (date != null) {
-				try {
-					Date dateObject = new SimpleDateFormat("yyyy-MM-dd").parse(date);
-					String year = new SimpleDateFormat("yyyy").format(dateObject);
-				
-					if (alternative != null) {
-						alternative = String.format("%s (%s)", alternative, year);
-					} else {
-						alternative = String.format("%s", year);
-					}
+			boolean isAlternativeTitleValid = isValidPartNumber(documentID, article.getId(), alternative);
 
-				} catch (ParseException e) {
-					logger.error("Failed to convert date for the alternative title.", e);
+			if (isAlternativeTitleValid) {
+				
+				/*  If there is a date, format the alternative titles as
+				a) There is partNumber => Jg. 1, n° 37 (1980)
+				b) There is NO partNumber => 1980
+
+				TODO: CONFIRM case b
+				Maybe b replaced by the "Text intégrale" ? But what about Hemecht?
+				*/ 
+				if (date != null) {
+					try {
+						Date dateObject = new SimpleDateFormat("yyyy-MM-dd").parse(date);
+						String year = new SimpleDateFormat("yyyy").format(dateObject);
+					
+						if (alternative != null) {
+							alternative = String.format("%s (%s)", alternative, year);
+						} else { // NOT REACHABLE ANYMORE
+							alternative = String.format("%s", year);
+						}
+
+					} catch (ParseException e) {
+						logger.error("Failed to convert date for the alternative title.", e);
+					}
 				}
 
+			} else {
+				// AlternativeTitle is wrong, so we store a code for later processing.
+
+				// TODO: Read this value from the configuration
+				alternative = AppConfigurationManager.getInstance().getExportConfig().primo.alternativeTitleCode;
 
 			}
+
+			
 			
 		}
 		
@@ -324,7 +346,7 @@ public abstract class ExportManager {
 	 */
 	public static String choosePreferredDmdId(String dmdId, String divType, MetsXMLParserHandler handler) {
 		
-		// If dmdid is null then set it to type such that we have final names such as 1382-ADVERTISMENT-12390.xml
+		// If dmdid is null then set it to type such that we have names such as 1382-ADVERTISMENT-12390.xml
 		// Reason: We export many objects, not all have an associated dmdSec.
 		if (dmdId == null) {
 			return divType;
@@ -377,6 +399,25 @@ public abstract class ExportManager {
 		} else {
 			return dmdId;
 		}
+	}
+
+	public static boolean isValidPartNumber(String documentID, String article, String partNumber) {
+		boolean isValid = true;
+
+		Pattern pattern = Pattern.compile("Jg\\. (\\d+), n. (.*)"); // () is  capture group
+		Matcher matcher = pattern.matcher(partNumber);
+
+		if (matcher.matches()) {
+			//System.out.println("DEBUG: PartNumber Matches : " + partNumber);
+		} else {
+			//System.out.println("DEBUG: PartNumber is WRONG : " + partNumber);
+			isValid = false;
+			logger.error(String.format("Document '%s', article '%s' has wrong PartNumber: '%s'", documentID, article, partNumber));
+		}
+		
+		// LOG ERROR FOR non-matc
+
+		return isValid;
 	}
 	
 	private static void controlBuilderQuality(ArticleDocumentBuilder builder) {
