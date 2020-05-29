@@ -271,39 +271,36 @@ public abstract class ExportManager {
 					
 			}
 
-			boolean isAlternativeTitleValid = isValidPartNumber(documentID, article.getId(), alternative);
-
-			if (isAlternativeTitleValid) {
-				
-				/*  If there is a date, format the alternative titles as
+			/*  If there is a date, format the alternative titles as
 				a) There is partNumber => Jg. 1, n° 37 (1980)
-				b) There is NO partNumber => 1980
+				b) There is NO partNumber => Use the date as dd.MM.YYYY
+				*/
+			
+			String dateString = null;
+			String yearString = null;
+			try {
+				Date dateObject = new SimpleDateFormat("yyyy-MM-dd").parse(date); 
+				dateString = new SimpleDateFormat("dd.MM.YYYY").format(dateObject);
+				yearString = new SimpleDateFormat("yyyy").format(dateObject);
+			} catch (ParseException e) {
+				logger.error("Failed to convert date for the alternative title for " + ark, e);
+			}
 
-				TODO: CONFIRM case b
-				Maybe b replaced by the "Text intégrale" ? But what about Hemecht?
-				*/ 
+			if (isValidPartNumber(documentID, article.getId(), alternative)) {
+				// a)
+				
 				if (date != null) {
-					try {
-						Date dateObject = new SimpleDateFormat("yyyy-MM-dd").parse(date);
-						String year = new SimpleDateFormat("yyyy").format(dateObject);
-					
-						if (alternative != null) {
-							alternative = String.format("%s (%s)", alternative, year);
-						} else { // NOT REACHABLE ANYMORE
-							alternative = String.format("%s", year);
-						}
-
-					} catch (ParseException e) {
-						logger.error("Failed to convert date for the alternative title.", e);
+					if (alternative != null) {
+						alternative = String.format("%s (%s)", alternative, yearString);
 					}
 				}
 
 			} else {
-				// AlternativeTitle is wrong, so we store a code for later processing.
+				// b)
 
-				// TODO: Read this value from the configuration
-				alternative = AppConfigurationManager.getInstance().getExportConfig().primo.alternativeTitleCode;
-
+				// AlternativeTitle is wrong, we store the date
+				//alternative = AppConfigurationManager.getInstance().getExportConfig().primo.alternativeTitleCode;
+				alternative = dateString;
 			}
 
 			
