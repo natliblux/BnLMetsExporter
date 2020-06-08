@@ -33,7 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import lu.bnl.AppGlobal;
-import lu.bnl.configuration.AppConfigurationManager;
 import lu.bnl.domain.constants.MetsConstant;
 import lu.bnl.domain.constants.MetsTypeHandler;
 import lu.bnl.domain.managers.ExecutionTimeTracker;
@@ -271,10 +270,7 @@ public abstract class ExportManager {
 					
 			}
 
-			/*  If there is a date, format the alternative titles as
-				a) There is partNumber => Jg. 1, n° 37 (1980)
-				b) There is NO partNumber => Use the date as dd.MM.YYYY
-				*/
+			// FIX ALTERANTIVE BASED ON TYPE AND VALIDITY
 			
 			String dateString = null;
 			String yearString = null;
@@ -286,24 +282,30 @@ public abstract class ExportManager {
 				logger.error("Failed to convert date for the alternative title for " + ark, e);
 			}
 
-			if (isValidPartNumber(documentID, article.getId(), alternative)) {
-				// a)
-				
-				if (date != null) {
-					if (alternative != null) {
-						alternative = String.format("%s (%s)", alternative, yearString);
-					}
-				}
+			// NEW: If Newspaper, then always use the date
+			String documentType = currentMetsTypeHandler.getTypeName();
 
-			} else {
-				// b)
-
-				// AlternativeTitle is wrong, we store the date
-				//alternative = AppConfigurationManager.getInstance().getExportConfig().primo.alternativeTitleCode;
+			if (documentType.equalsIgnoreCase(MetsConstant.METS_TYPE_NEWSPAPER)) {
 				alternative = dateString;
+			} else if (documentType.equalsIgnoreCase(MetsConstant.METS_TYPE_SERIAL)) {
+				/*  If there is a date, format the alternative titles as
+						a) There is partNumber => Jg. 1, n° 37 (1980)
+						b) There is NO partNumber => Use the date as dd.MM.YYYY
+				*/
+				if (isValidPartNumber(documentID, article.getId(), alternative)) {
+					// a)
+					if (date != null) {
+						if (alternative != null) {
+							alternative = String.format("%s (%s)", alternative, yearString);
+						}
+					}
+				} else {
+					// b)
+					// AlternativeTitle is wrong, we store the date
+					//alternative = AppConfigurationManager.getInstance().getExportConfig().primo.alternativeTitleCode;
+					alternative = dateString;
+				}
 			}
-
-			
 			
 		}
 		
@@ -400,19 +402,25 @@ public abstract class ExportManager {
 
 	public static boolean isValidPartNumber(String documentID, String article, String partNumber) {
 		boolean isValid = true;
+		boolean failed = false;
+		
+		try {
+			Pattern pattern = Pattern.compile("Jg\\. (.*), n. (.*)"); // () is  capture group
+			Matcher matcher = pattern.matcher(partNumber);
 
-		Pattern pattern = Pattern.compile("Jg\\. (\\d+), n. (.*)"); // () is  capture group
-		Matcher matcher = pattern.matcher(partNumber);
-
-		if (matcher.matches()) {
-			//System.out.println("DEBUG: PartNumber Matches : " + partNumber);
-		} else {
-			//System.out.println("DEBUG: PartNumber is WRONG : " + partNumber);
+			// If NO match: Wrong partNumber
+			if (!matcher.matches() || partNumber.contains("unknown") || partNumber.contains("null")) {
+				isValid = false;
+				failed = true;
+			}
+		} catch (Exception e) {
 			isValid = false;
-			logger.error(String.format("Document '%s', article '%s' has wrong PartNumber: '%s'", documentID, article, partNumber));
+			failed = true;
 		}
 		
-		// LOG ERROR FOR non-matc
+		if (failed) {
+			logger.error(String.format("Document '%s', article '%s' has wrong PartNumber: '%s'", documentID, article, partNumber));
+		}
 
 		return isValid;
 	}
