@@ -31,6 +31,8 @@ public class ArticleDocumentBuilder {
 	
 	private List<String> isPartOfs;
 	
+	private String paperId;
+	private String documentType;
 	private String publisher;
 	private String text;
 	private String lineText;
@@ -72,6 +74,16 @@ public class ArticleDocumentBuilder {
 	
 	public ArticleDocumentBuilder date(String date) {
 		this.date = date;
+		return this;
+	}
+
+	public ArticleDocumentBuilder paperId(String paperId) {
+		this.paperId = paperId;
+		return this;
+	}
+
+	public ArticleDocumentBuilder documentType(String documentType) {
+		this.documentType = documentType;
 		return this;
 	}
 	
@@ -164,6 +176,14 @@ public class ArticleDocumentBuilder {
 
 	public String getDate() {
 		return date;
+	}
+
+	public String getPaperId() {
+		return paperId;
+	}
+
+	public String getDocumentType() {
+		return documentType;
 	}
 
 	public List<String> getIsPartOfs() {
