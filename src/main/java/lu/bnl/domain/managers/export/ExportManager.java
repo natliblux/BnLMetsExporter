@@ -124,7 +124,9 @@ public abstract class ExportManager {
 		String alternative 		= null;
 		String publisher 		= null;
 		String recordIdentifier = null;
-		String date = null;
+		String date 			= null;
+		String documentType 	= null;
+		String paperId			= null;
 
 		List<String> isPartOfs = new ArrayList<>();
 		List<String> creators  = new ArrayList<>();
@@ -134,6 +136,7 @@ public abstract class ExportManager {
 		// ################################################################################
 
 		MetsTypeHandler currentMetsTypeHandler = handler.getMetsTypeHandler();
+		documentType = currentMetsTypeHandler.getTypeName();
 
 		// Select the preferred DMDID
 		String dmdid = article.getDmdid();
@@ -162,6 +165,10 @@ public abstract class ExportManager {
 			useCollection = false;
 			collectionDmd = handler.getDmdSectionIssue();
 		}
+
+		// START In progress: Using new ModsMdCollection handler
+		paperId = handler.getModsMdCollection().getPaperId();
+		// END
 
 		// Step 1 - Get metadata from current DMDSec element
 		// ################################################################################
@@ -276,14 +283,13 @@ public abstract class ExportManager {
 			String yearString = null;
 			try {
 				Date dateObject = new SimpleDateFormat("yyyy-MM-dd").parse(date); 
-				dateString = new SimpleDateFormat("dd.MM.YYYY").format(dateObject);
+				dateString = new SimpleDateFormat("dd.MM.yyyy").format(dateObject);
 				yearString = new SimpleDateFormat("yyyy").format(dateObject);
 			} catch (ParseException e) {
 				logger.error("Failed to convert date for the alternative title for " + ark, e);
 			}
 
 			// NEW: If Newspaper, then always use the date
-			String documentType = currentMetsTypeHandler.getTypeName();
 
 			if (documentType.equalsIgnoreCase(MetsConstant.METS_TYPE_NEWSPAPER)) {
 				alternative = dateString;
@@ -312,6 +318,8 @@ public abstract class ExportManager {
 		ArticleDocumentBuilder builder = new ArticleDocumentBuilder(id, documentID)
 				.ark(ark)
 				.dmdId(dmdid)
+				.paperId(paperId)
+				.documentType(documentType)
 				.recordIdentifier(recordIdentifier)
 				.date(date)
 				.isPartOfs(isPartOfs)

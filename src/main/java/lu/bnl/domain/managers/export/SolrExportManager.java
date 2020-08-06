@@ -18,7 +18,10 @@
  *******************************************************************************/
 package lu.bnl.domain.managers.export;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -417,7 +420,22 @@ public class SolrExportManager extends ExportManager {
 		doc.addField("creators", 			builder.getCreators());
 		doc.addField("lang",    			builder.getLanguages());
 		doc.addField("ispartofs",  			builder.getIsPartOfs());
+
+		// New Fields
+		doc.addField("document_type", 		builder.getDocumentType().toLowerCase());
+		addIfNotEmpty(doc, "collection", 	builder.getPaperId());
 		
+		try {
+			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+			Date dateObject = formatter.parse(builder.getDate());
+			
+			// If the above worked, we can safely create the Solr date
+			doc.addField("date_document", formatter.format(dateObject) + "T00:00:00.000Z");
+			
+		} catch (ParseException e) {
+			logger.error(String.format("Document '%s' Failed to convert date '%s' for SolrIndex ", builder.getDocumentID(), builder.getDate()), e);
+		}
+
 		//doc.addField("reference", "issue:"+issue_title+"/article:"+dmdid);
 		
 		return doc;

@@ -153,6 +153,11 @@
 	<field name="ispartofs"	type="string"	indexed="true"	stored="true" multiValued="true" />
 	<field name="type"		type="string"	indexed="true"	stored="true" />
 	
+  <!-- NEW FIELDS 2020-->
+  <field name="document_type" type="string" indexed="true" stored="true" /> <!-- e.g. NEWSPAPER, SERIAL -->
+  <field name="collection"    type="string" indexed="true" stored="true" /> <!-- e.g. luxwort -->
+  <field name="date_document" type="tdate"  indexed="true" stored="true" /> <!-- e.g. 1900-12-30T00:00:00.000Z -->
+
 	<!-- Used for: PAGE, WORD Index -->
 	<field name="page"		type="string"	indexed="true" 	stored="true" />
 	
