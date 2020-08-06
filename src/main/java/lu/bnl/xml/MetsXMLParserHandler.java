@@ -31,11 +31,13 @@ import org.xml.sax.helpers.DefaultHandler;
 import lu.bnl.domain.constants.MetsConstant;
 import lu.bnl.domain.constants.MetsTypeHandler;
 import lu.bnl.domain.model.Alto;
+import lu.bnl.domain.model.Collection;
 import lu.bnl.domain.model.DivSection;
 import lu.bnl.domain.model.DmdSection;
 import lu.bnl.xml.handlers.MetsDMDSecHandler;
 import lu.bnl.xml.handlers.MetsFileSecHandler;
 import lu.bnl.xml.handlers.MetsLogicalStructureHandler;
+import lu.bnl.xml.handlers.ModsCollectionDescriptiveSectionHandler;
 
 public class MetsXMLParserHandler extends DefaultHandler {
 	
@@ -53,10 +55,9 @@ public class MetsXMLParserHandler extends DefaultHandler {
 	
 	private ArrayList<DefaultHandler> handlers;
 	
+	private ModsCollectionDescriptiveSectionHandler modsCollectionHandler;
 	private MetsDMDSecHandler metsDMDSecHandler;
-	
 	private MetsFileSecHandler metsFileSecHandler;
-	
 	private MetsLogicalStructureHandler metsLogicalStructureHandler;
 	
 	//================================================================================
@@ -73,6 +74,9 @@ public class MetsXMLParserHandler extends DefaultHandler {
 	private void initHandlers() {
 		this.handlers = new ArrayList<>();
 		
+		this.modsCollectionHandler = new ModsCollectionDescriptiveSectionHandler();
+		this.handlers.add(this.modsCollectionHandler);
+
 		this.metsDMDSecHandler = new MetsDMDSecHandler();
 		this.handlers.add(this.metsDMDSecHandler);
 		
@@ -127,8 +131,13 @@ public class MetsXMLParserHandler extends DefaultHandler {
 		return this.metsDMDSecHandler.getDmdSectionPrint();
 	}
 	
+	@Deprecated
 	public DmdSection getDmdSectionCollection() {
 		return this.metsDMDSecHandler.getDmdSectionCollection();
+	}
+
+	public Collection getModsMdCollection() {
+		return this.modsCollectionHandler.getCollection();
 	}
 	
 	public DmdSection getDmdSection(String id) {
