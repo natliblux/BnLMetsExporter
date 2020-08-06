@@ -55,9 +55,15 @@ public class MetsConstant {
 	
 	public static final String TAG_DMDSEC_MDWRAP	= "mdWrap"; // <mdWrap MIMETYPE="text/xml" MDTYPE="MARC"> 
 	
+	// MODSMD_COLLECTION
+
+	public static final String VALUE_MODSMD_COLLECTION			= "MODSMD_COLLECTION";
+
+	public static final String VALUE_IDENTIFIER_LOCAL			= "local";
+
 	// MODS
 	
-	public static final String TAG_MODS_IDENTIFIER	= "MODS:identifer"; // Technical Requirements of 2018
+	public static final String TAG_MODS_IDENTIFIER	= "MODS:identifier"; // Technical Requirements of 2018
 	
 	public static final String TAG_MODS_TITLEINFO	= "MODS:titleInfo";
 	
@@ -104,7 +110,9 @@ public class MetsConstant {
 	
 	public static final String ATTR_NAME_MDTYPE			= "MDTYPE";
 	
+	@Deprecated() // Use ATTR_ID
 	public static final String ATTR_NAME_ID				= "ID";
+	public static final String ATTR_ID					= "ID";
 	
 	public static final String ATTR_NAME_DMDID			= "DMDID";
 	
