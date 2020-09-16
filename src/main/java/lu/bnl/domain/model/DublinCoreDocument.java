@@ -131,7 +131,7 @@ public class DublinCoreDocument {
 		
 		this.publisher = builder.getPublisher();
 		
-		this.relation = builder.getDocumentID();
+		this.relation = this.getFixedRelation(builder);
 		
 		this.hasVersion = this.createHasVersion(builder);
 		
@@ -181,6 +181,13 @@ public class DublinCoreDocument {
 		}
 		
 		return pattern;
+	}
+
+	// Bug: Primo can't handle the "/" well. We replace by "_"
+	private String getFixedRelation(ArticleDocumentBuilder builder) {
+		String relation = builder.getDocumentID();
+		relation = relation.replaceAll("ark:", "").replaceAll("/", "_");
+		return relation;
 	}
 	
 	//================================================================================

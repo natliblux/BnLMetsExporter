@@ -95,7 +95,10 @@ public class PrimoDocument {
 		this.listRecords = new ListRecords();
 
 		String recordIdentifierBase = AppConfigurationManager.getInstance().getExportConfig().primo.recordIdentifier;
-		String recordIdentifier = String.format("%s/%s/%s", recordIdentifierBase, documentID, id);
+		String recordIdentifier = String.format("%s-%s/%s", recordIdentifierBase, documentID, id);
+
+		// Bug: Primo can't handle the "/" well. We replace by "_"
+		recordIdentifier = recordIdentifier.replaceAll("/", "_");
 
 		this.listRecords.getRecord().getHeader().setIdentifier( recordIdentifier );
 
