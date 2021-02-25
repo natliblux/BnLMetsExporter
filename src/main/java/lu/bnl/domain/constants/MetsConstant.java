@@ -97,12 +97,16 @@ public class MetsConstant {
 	
 	// MARC
 	
-	public static final String TAG_MARC_CONTROLFIELD = "controlfield"; // <controlfield tag="001">000107279:LUX01</controlfield>
+	public static final String TAG_MARC_LEADER 			= "leader";
+
+	public static final String TAG_MARC_CONTROLFIELD 	= "controlfield"; // <controlfield tag="001">000107279:LUX01</controlfield>
 	
-	public static final String TAG_MARC_DATAFIELD	 = "datafield"; // <datafield ind1=" " ind2=" " tag="019">
+	public static final String TAG_MARC_DATAFIELD	 	= "datafield"; // <datafield ind1=" " ind2=" " tag="019">
 	
-	public static final String TAG_MARC_SUBFIELD	 = "subfield"; // <subfield code="5">03.10.1995</subfield>
+	public static final String TAG_MARC_SUBFIELD	 	= "subfield"; // <subfield code="5">03.10.1995</subfield>
 	
+	public static final String VALUE_MARC_ALEPHSYNC 	= "MARCMD_ALEPHSYNC";
+
 	// Attribute Names
 	//================================================================================
 	
