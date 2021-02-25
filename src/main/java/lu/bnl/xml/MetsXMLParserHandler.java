@@ -28,12 +28,13 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import lu.bnl.domain.constants.MetsConstant;
 import lu.bnl.domain.constants.MetsTypeHandler;
 import lu.bnl.domain.model.Alto;
 import lu.bnl.domain.model.Collection;
 import lu.bnl.domain.model.DivSection;
 import lu.bnl.domain.model.DmdSection;
+import lu.bnl.domain.model.marc.MarcRecordDTO;
+import lu.bnl.xml.handlers.MarcSectionHandler;
 import lu.bnl.xml.handlers.MetsDMDSecHandler;
 import lu.bnl.xml.handlers.MetsFileSecHandler;
 import lu.bnl.xml.handlers.MetsLogicalStructureHandler;
@@ -57,6 +58,7 @@ public class MetsXMLParserHandler extends DefaultHandler {
 	
 	private ModsCollectionDescriptiveSectionHandler modsCollectionHandler;
 	private MetsDMDSecHandler metsDMDSecHandler;
+	private MarcSectionHandler marcSectionHandler;
 	private MetsFileSecHandler metsFileSecHandler;
 	private MetsLogicalStructureHandler metsLogicalStructureHandler;
 	
@@ -80,6 +82,9 @@ public class MetsXMLParserHandler extends DefaultHandler {
 		this.metsDMDSecHandler = new MetsDMDSecHandler();
 		this.handlers.add(this.metsDMDSecHandler);
 		
+		this.marcSectionHandler = new MarcSectionHandler();
+		this.handlers.add(this.marcSectionHandler);
+
 		this.metsFileSecHandler = new MetsFileSecHandler(this.dir);
 		this.handlers.add(this.metsFileSecHandler);
 		
@@ -136,6 +141,10 @@ public class MetsXMLParserHandler extends DefaultHandler {
 		return this.metsDMDSecHandler.getDmdSectionCollection();
 	}
 
+	public MarcRecordDTO getMarcRecord() {
+		return this.marcSectionHandler.getMarcRecordDTO();
+	}
+
 	public Collection getModsMdCollection() {
 		return this.modsCollectionHandler.getCollection();
 	}
@@ -144,11 +153,9 @@ public class MetsXMLParserHandler extends DefaultHandler {
 		return this.metsDMDSecHandler.getDmdSection(id);
 	}
 	
-	
 	public List<Alto> getPages() {
 		return this.metsFileSecHandler.getPages();
 	}
-	
 	
 	public Map<String, DivSection> getArticles() {
 		return this.metsLogicalStructureHandler.getArticles();
