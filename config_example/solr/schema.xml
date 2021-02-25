@@ -165,7 +165,16 @@
 	<field name="y"			type="int"	indexed="false" stored="true" />
 	<field name="w"			type="int"	indexed="false" stored="true" />
 	<field name="h"			type="int"	indexed="false" stored="true" />
-	  
+  
+  <!-- Anything search field -->
+  <field name="anything" type="text_primo" indexed="true" stored="false" multiValued="true" />
+
+  <!-- MARC21 Metadata fields -->
+  <dynamicField name="MARC21_*" type="text_primo" indexed="true" stored="true" multiValued="true" />
+
+  <!-- Copy Fields -->
+  <copyField source="MARC21_*" dest="anything" />
+
     <!-- uncomment the following to ignore any fields that don't already match an existing 
         field name or dynamic field, rather than reporting them as an error. 
         alternately, change the type="ignored" to some other type e.g. "text" if you want 

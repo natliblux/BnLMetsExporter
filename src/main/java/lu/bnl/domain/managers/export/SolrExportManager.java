@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2017-2020 Bibliothèque nationale de Luxembourg (BnL)
+ * Copyright (C) 2017-2021 Bibliothèque nationale de Luxembourg (BnL)
  *
  * This file is part of BnLMetsExporter.
  *
@@ -22,6 +22,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,6 +41,10 @@ import lu.bnl.domain.model.AltoWord;
 import lu.bnl.domain.model.ArticleDocumentBuilder;
 import lu.bnl.domain.model.DivSection;
 import lu.bnl.domain.model.DocList;
+import lu.bnl.domain.model.marc.MarcControlFieldDTO;
+import lu.bnl.domain.model.marc.MarcDataFieldDTO;
+import lu.bnl.domain.model.marc.MarcRecordDTO;
+import lu.bnl.domain.model.marc.MarcSubFieldDTO;
 import lu.bnl.reader.MetsAltoReaderManager;
 import lu.bnl.reader.MetsGetter;
 import lu.bnl.xml.AltoXMLParserHandler;
@@ -69,6 +74,8 @@ public class SolrExportManager extends ExportManager {
 	private SolrManager articleSolrManager;
 	
 	private SolrManager pageSolrManager;
+
+	private static final String UNKNOWN = "unknown";
 	
 	public SolrExportManager(String dir, boolean useCloud, boolean parallel) {
 		this.dir = dir;
@@ -422,31 +429,168 @@ public class SolrExportManager extends ExportManager {
 		doc.addField("ispartofs",  			builder.getIsPartOfs());
 
 		// New Fields
+
 		doc.addField("document_type", 		builder.getDocumentType().toLowerCase());
 		addIfNotEmpty(doc, "collection", 	builder.getPaperId());
-		
+	
 		try {
 			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 			Date dateObject = formatter.parse(builder.getDate());
 			
 			// If the above worked, we can safely create the Solr date
 			doc.addField("date_document", formatter.format(dateObject) + "T00:00:00.000Z");
-			
 		} catch (ParseException e) {
 			logger.error(String.format("Document '%s' Failed to convert date '%s' for SolrIndex ", builder.getDocumentID(), builder.getDate()), e);
 		}
+
+		// MARC21 Fields
+		/** What will be indexed
+		 * 	- OK Control Field 			001
+		 * 	- OK Author 				100 $a : $b / $c
+		 *  - OK Title 					245 $a : $b / $c
+		 *  - OK BibliographicAddress 	260 $a : $b, $c
+		 *  - OK PhysicalDescription 	300 $a : $b
+		 *  - OK Fond 					852 $b - $d
+		 *  - OK Archives 				949 $0 - $j
+		 *  - OK CatalogueLink 			DRL $a
+		 */
+
+		MarcRecordDTO marcRecord = handler.getMarcRecord();
+		String controlField_001 = null;
+		for (MarcControlFieldDTO controlField : marcRecord.getControlFields()) {
+			if (controlField.getTag().equalsIgnoreCase("001")) {
+				controlField_001 = controlField.getContent();
+				doc.addField("MARC21_controlfield_001", controlField_001);
+			}
+		} // end for MarcControlFieldDTO
+
+		for (MarcDataFieldDTO dataField : marcRecord.getDataFields()) {
+
+			System.out.println(dataField.getTag());
+
+			if (dataField.getTag().equalsIgnoreCase("100")) {
+				// Author 				100 $a : $b / $c
+				Map<String, List<String>> mapping = createMapping("a", UNKNOWN);
+				processMarcField(dataField, mapping);
+
+				String text = String.join(" ", new String[]{
+					String.join(" ", mapping.get("a")),
+					String.join(" ", mapping.get(UNKNOWN))
+				});
+
+				doc.addField("MARC21_datafield_100", text);
+			}
+
+			if (dataField.getTag().equalsIgnoreCase("245")) {
+				// Title 				245 $a : $b / $c
+				Map<String, List<String>> mapping = createMapping("a", "b", "c", UNKNOWN);
+				processMarcField(dataField, mapping);
+
+				String text = String.join(" ", new String[]{
+					String.join(" ", mapping.get("a")),
+					mapping.get("b").size() > 0 ? String.format(": %s", String.join(" ", mapping.get("b"))) : "",
+					mapping.get("c").size() > 0 ? String.format("/ %s", String.join(" ", mapping.get("c"))) : "",
+				});
+
+				doc.addField("MARC21_datafield_245", text);
+			}
+
+			if (dataField.getTag().equalsIgnoreCase("260")) {
+				// BibliographicAddress 	260 $a : $b, $c
+				Map<String, List<String>> mapping = createMapping("a", "b", "c", UNKNOWN);
+				processMarcField(dataField, mapping);
+
+				String text = String.join(" ", new String[]{
+					String.join(" ", mapping.get("a")),
+					mapping.get("b").size() > 0 ? String.format(": %s", String.join(" ", mapping.get("b"))) : "",
+					mapping.get("c").size() > 0 ? String.format(", %s", String.join(" ", mapping.get("c"))) : "",
+				});
+
+				doc.addField("MARC21_datafield_260", text);
+			}
+
+			if (dataField.getTag().equalsIgnoreCase("300")) {
+				// PhysicalDescription 	300 $a : $b
+				Map<String, List<String>> mapping = createMapping("a", "b", UNKNOWN);
+				processMarcField(dataField, mapping);
+
+				String text = String.join(" ", new String[]{
+					String.join(" ", mapping.get("a")),
+					mapping.get("b").size() > 0 ? String.format(": %s", String.join(" ", mapping.get("b"))) : ""
+				});
+
+				doc.addField("MARC21_datafield_300", text);
+			}
+
+			if (dataField.getTag().equalsIgnoreCase("852")) {
+				// Fond 					852 $b - $d
+				Map<String, List<String>> mapping = createMapping("b", "d", UNKNOWN);
+				processMarcField(dataField, mapping);
+
+				String text = String.join(" ", new String[]{
+					String.join(" ", mapping.get("b")),
+					mapping.get("d").size() > 0 ? String.format("- %s", String.join(" ", mapping.get("d"))) : ""
+				});
+
+				doc.addField("MARC21_datafield_852", text);
+			}
+
+			if (dataField.getTag().equalsIgnoreCase("949")) {
+				// Archives 				949 $0 - $j
+				Map<String, List<String>> mapping = createMapping("0", "j", UNKNOWN);
+				processMarcField(dataField, mapping);
+
+				String text = String.join(" ", new String[]{
+					String.join(" ", mapping.get("0")),
+					mapping.get("j").size() > 0 ? String.format("- %s", String.join(" ", mapping.get("j"))) : ""
+				});
+
+				doc.addField("MARC21_datafield_300", text);
+			}
+
+			if (dataField.getTag().equalsIgnoreCase("DRL") && controlField_001 != null) {
+				// CatalogueLink 		DRL $a
+				Map<String, List<String>> mapping = createMapping("a", UNKNOWN);
+				processMarcField(dataField, mapping);
+
+				String text = String.join(" ", new String[]{
+					String.join(" ", mapping.get("a"))
+				});
+
+				doc.addField("MARC21_datafield_DRL", text);
+			}
+			
+		} // end for MarcDataFieldDTO
 
 		//doc.addField("reference", "issue:"+issue_title+"/article:"+dmdid);
 		
 		return doc;
 	}
-	
-	
-	
+
 	private void addIfNotEmpty(SolrInputDocument doc, String key, String value) {
 		if (!StringUtils.isEmpty(value)) {
 			doc.addField(key, value);
 		}
 	}
-	
+
+	private Map<String, List<String>> createMapping(String... strings) {
+		HashMap<String, List<String>> mapping = new HashMap<>();
+		for (int i = 0; i < strings.length; i++) {
+			mapping.put(strings[i], new ArrayList<String>());
+			System.out.println("Putting " + strings[i]);
+		}
+		return mapping;
+	}
+
+	private void processMarcField(MarcDataFieldDTO dataField, Map<String, List<String>> mapping) {
+		for (MarcSubFieldDTO subField : dataField.getSubFields()) {
+			String key = subField.getCode();
+			if (mapping.containsKey(key)) {
+				mapping.get(key).add(subField.getContent());
+			} else {
+				mapping.get(UNKNOWN).add(subField.getContent());
+			}
+		}
+	}
+
 }
