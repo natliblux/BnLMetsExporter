@@ -456,111 +456,116 @@ public class SolrExportManager extends ExportManager {
 		 */
 
 		MarcRecordDTO marcRecord = handler.getMarcRecord();
-		String controlField_001 = null;
-		for (MarcControlFieldDTO controlField : marcRecord.getControlFields()) {
-			if (controlField.getTag().equalsIgnoreCase("001")) {
-				controlField_001 = controlField.getContent();
-				doc.addField("MARC21_controlfield_001", controlField_001);
-			}
-		} // end for MarcControlFieldDTO
+		if (marcRecord != null) {
 
-		for (MarcDataFieldDTO dataField : marcRecord.getDataFields()) {
+		
+			String controlField_001 = null;
+			for (MarcControlFieldDTO controlField : marcRecord.getControlFields()) {
+				if (controlField.getTag().equalsIgnoreCase("001")) {
+					controlField_001 = controlField.getContent();
+					doc.addField("MARC21_controlfield_001", controlField_001);
+				}
+			} // end for MarcControlFieldDTO
 
-			System.out.println(dataField.getTag());
+			for (MarcDataFieldDTO dataField : marcRecord.getDataFields()) {
 
-			if (dataField.getTag().equalsIgnoreCase("100")) {
-				// Author 				100 $a : $b / $c
-				Map<String, List<String>> mapping = createMapping("a", UNKNOWN);
-				processMarcField(dataField, mapping);
+				System.out.println(dataField.getTag());
 
-				String text = String.join(" ", new String[]{
-					String.join(" ", mapping.get("a")),
-					String.join(" ", mapping.get(UNKNOWN))
-				});
+				if (dataField.getTag().equalsIgnoreCase("100")) {
+					// Author 				100 $a : $b / $c
+					Map<String, List<String>> mapping = createMapping("a", UNKNOWN);
+					processMarcField(dataField, mapping);
 
-				doc.addField("MARC21_datafield_100", text);
-			}
+					String text = String.join(" ", new String[]{
+						String.join(" ", mapping.get("a")),
+						String.join(" ", mapping.get(UNKNOWN))
+					});
 
-			if (dataField.getTag().equalsIgnoreCase("245")) {
-				// Title 				245 $a : $b / $c
-				Map<String, List<String>> mapping = createMapping("a", "b", "c", UNKNOWN);
-				processMarcField(dataField, mapping);
+					doc.addField("MARC21_datafield_100", text);
+				}
 
-				String text = String.join(" ", new String[]{
-					String.join(" ", mapping.get("a")),
-					mapping.get("b").size() > 0 ? String.format(": %s", String.join(" ", mapping.get("b"))) : "",
-					mapping.get("c").size() > 0 ? String.format("/ %s", String.join(" ", mapping.get("c"))) : "",
-				});
+				if (dataField.getTag().equalsIgnoreCase("245")) {
+					// Title 				245 $a : $b / $c
+					Map<String, List<String>> mapping = createMapping("a", "b", "c", UNKNOWN);
+					processMarcField(dataField, mapping);
 
-				doc.addField("MARC21_datafield_245", text);
-			}
+					String text = String.join(" ", new String[]{
+						String.join(" ", mapping.get("a")),
+						mapping.get("b").size() > 0 ? String.format(": %s", String.join(" ", mapping.get("b"))) : "",
+						mapping.get("c").size() > 0 ? String.format("/ %s", String.join(" ", mapping.get("c"))) : "",
+					});
 
-			if (dataField.getTag().equalsIgnoreCase("260")) {
-				// BibliographicAddress 	260 $a : $b, $c
-				Map<String, List<String>> mapping = createMapping("a", "b", "c", UNKNOWN);
-				processMarcField(dataField, mapping);
+					doc.addField("MARC21_datafield_245", text);
+				}
 
-				String text = String.join(" ", new String[]{
-					String.join(" ", mapping.get("a")),
-					mapping.get("b").size() > 0 ? String.format(": %s", String.join(" ", mapping.get("b"))) : "",
-					mapping.get("c").size() > 0 ? String.format(", %s", String.join(" ", mapping.get("c"))) : "",
-				});
+				if (dataField.getTag().equalsIgnoreCase("260")) {
+					// BibliographicAddress 	260 $a : $b, $c
+					Map<String, List<String>> mapping = createMapping("a", "b", "c", UNKNOWN);
+					processMarcField(dataField, mapping);
 
-				doc.addField("MARC21_datafield_260", text);
-			}
+					String text = String.join(" ", new String[]{
+						String.join(" ", mapping.get("a")),
+						mapping.get("b").size() > 0 ? String.format(": %s", String.join(" ", mapping.get("b"))) : "",
+						mapping.get("c").size() > 0 ? String.format(", %s", String.join(" ", mapping.get("c"))) : "",
+					});
 
-			if (dataField.getTag().equalsIgnoreCase("300")) {
-				// PhysicalDescription 	300 $a : $b
-				Map<String, List<String>> mapping = createMapping("a", "b", UNKNOWN);
-				processMarcField(dataField, mapping);
+					doc.addField("MARC21_datafield_260", text);
+				}
 
-				String text = String.join(" ", new String[]{
-					String.join(" ", mapping.get("a")),
-					mapping.get("b").size() > 0 ? String.format(": %s", String.join(" ", mapping.get("b"))) : ""
-				});
+				if (dataField.getTag().equalsIgnoreCase("300")) {
+					// PhysicalDescription 	300 $a : $b
+					Map<String, List<String>> mapping = createMapping("a", "b", UNKNOWN);
+					processMarcField(dataField, mapping);
 
-				doc.addField("MARC21_datafield_300", text);
-			}
+					String text = String.join(" ", new String[]{
+						String.join(" ", mapping.get("a")),
+						mapping.get("b").size() > 0 ? String.format(": %s", String.join(" ", mapping.get("b"))) : ""
+					});
 
-			if (dataField.getTag().equalsIgnoreCase("852")) {
-				// Fond 					852 $b - $d
-				Map<String, List<String>> mapping = createMapping("b", "d", UNKNOWN);
-				processMarcField(dataField, mapping);
+					doc.addField("MARC21_datafield_300", text);
+				}
 
-				String text = String.join(" ", new String[]{
-					String.join(" ", mapping.get("b")),
-					mapping.get("d").size() > 0 ? String.format("- %s", String.join(" ", mapping.get("d"))) : ""
-				});
+				// NO NEED TO INDEX THOSE FIELDS
+				/*if (dataField.getTag().equalsIgnoreCase("852")) {
+					// Fond 					852 $b - $d
+					Map<String, List<String>> mapping = createMapping("b", "d", UNKNOWN);
+					processMarcField(dataField, mapping);
 
-				doc.addField("MARC21_datafield_852", text);
-			}
+					String text = String.join(" ", new String[]{
+						String.join(" ", mapping.get("b")),
+						mapping.get("d").size() > 0 ? String.format("- %s", String.join(" ", mapping.get("d"))) : ""
+					});
 
-			if (dataField.getTag().equalsIgnoreCase("949")) {
-				// Archives 				949 $0 - $j
-				Map<String, List<String>> mapping = createMapping("0", "j", UNKNOWN);
-				processMarcField(dataField, mapping);
+					doc.addField("MARC21_datafield_852", text);
+				}*/
 
-				String text = String.join(" ", new String[]{
-					String.join(" ", mapping.get("0")),
-					mapping.get("j").size() > 0 ? String.format("- %s", String.join(" ", mapping.get("j"))) : ""
-				});
+				/*if (dataField.getTag().equalsIgnoreCase("949")) {
+					// Archives 				949 $0 - $j
+					Map<String, List<String>> mapping = createMapping("0", "j", UNKNOWN);
+					processMarcField(dataField, mapping);
 
-				doc.addField("MARC21_datafield_300", text);
-			}
+					String text = String.join(" ", new String[]{
+						String.join(" ", mapping.get("0")),
+						mapping.get("j").size() > 0 ? String.format("- %s", String.join(" ", mapping.get("j"))) : ""
+					});
 
-			if (dataField.getTag().equalsIgnoreCase("DRL") && controlField_001 != null) {
-				// CatalogueLink 		DRL $a
-				Map<String, List<String>> mapping = createMapping("a", UNKNOWN);
-				processMarcField(dataField, mapping);
+					doc.addField("MARC21_datafield_300", text);
+				}*/
 
-				String text = String.join(" ", new String[]{
-					String.join(" ", mapping.get("a"))
-				});
+				/*if (dataField.getTag().equalsIgnoreCase("DRL") && controlField_001 != null) {
+					// CatalogueLink 		DRL $a
+					Map<String, List<String>> mapping = createMapping("a", UNKNOWN);
+					processMarcField(dataField, mapping);
 
-				doc.addField("MARC21_datafield_DRL", text);
-			}
-			
-		} // end for MarcDataFieldDTO
+					String text = String.join(" ", new String[]{
+						String.join(" ", mapping.get("a"))
+					});
+
+					doc.addField("MARC21_datafield_DRL", text);
+				}*/
+				
+			} // end for MarcDataFieldDTO
+		} // end marcRecord no null
 
 		//doc.addField("reference", "issue:"+issue_title+"/article:"+dmdid);
 		

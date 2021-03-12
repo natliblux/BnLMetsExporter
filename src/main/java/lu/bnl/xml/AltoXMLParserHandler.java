@@ -332,9 +332,12 @@ public class AltoXMLParserHandler extends DefaultHandler {
 		}
 		
 
-		String id 				= attributes.getValue( AltoConstant.ATTR_STRING_ID );
-		String content 			= attributes.getValue( AltoConstant.ATTR_STRING_CONTENT ); // MAIN TEXT IS HERE, no need character method on handler
+		String id		= attributes.getValue( AltoConstant.ATTR_STRING_ID );
+		String content	= attributes.getValue( AltoConstant.ATTR_STRING_CONTENT ); // MAIN TEXT IS HERE, no need character method on handler
 		
+		// For Word Hypenation Only
+		AltoWord tempWord = new AltoWord();
+
 		// Pre-Process the String content
 		content = TextProcessor.escapeDangerousHtmlCharacters(content);
 		
@@ -363,7 +366,8 @@ public class AltoXMLParserHandler extends DefaultHandler {
 				// Save hyphenation to replace later (last HyphenWord  will be replaced by HyphenEnd)
 				this.currentAltoLine.setHyphenStart(content);
 				this.currentAltoLine.setHyphenStartWord(subContent); // The real complete word
-				
+				tempWord.setHypPart1(content);
+
 				this.didFindHyphen = true;
 				
 				this.currentAltoHyphenation = new AltoHyphenation();
@@ -376,7 +380,8 @@ public class AltoXMLParserHandler extends DefaultHandler {
 			} else if ("HypPart2".equalsIgnoreCase(subType)) {
 				
 				this.currentAltoLine.setHyphenEnd(content);
-				this.currentAltoLine.setHyphenEndWord(subContent); // The real complete word 
+				this.currentAltoLine.setHyphenEndWord(subContent); // The real complete word
+				tempWord.setHypPart2(content);
 			
 				if (this.currentAltoHyphenation != null) {
 					this.currentAltoHyphenation.setEnd(content);
@@ -420,11 +425,11 @@ public class AltoXMLParserHandler extends DefaultHandler {
 			// Tokenize and index for each token
 			List<String> texts = lu.parse(contentForLine);
 			for (String text : texts) {
-				wordCoord = addToIndex(text, x, y, w, h, null);
+				wordCoord = addToIndex(text, x, y, w, h, null, tempWord);
 				consecutiveTags.add(wordCoord); //not sure !
 			}
 		} else {
-			wordCoord = addToIndex(contentForLine, x, y, w, h, id);
+			wordCoord = addToIndex(contentForLine, x, y, w, h, id, tempWord);
 			consecutiveTags.add(wordCoord);
 		}
 		
@@ -492,7 +497,7 @@ public class AltoXMLParserHandler extends DefaultHandler {
 	//================================================================================
 
 	
-	private AltoWord addToIndex(String text, Integer x, Integer y, Integer w, Integer h, String id) {
+	private AltoWord addToIndex(String text, Integer x, Integer y, Integer w, Integer h, String id, AltoWord tempWord) {
 		AltoWord wordCoord = null;
 
 		// If word is cleared, do not index it 
@@ -512,7 +517,16 @@ public class AltoXMLParserHandler extends DefaultHandler {
 			wordCoord.setText(text);
 			wordCoord.addCoord(x, y, w, h);
 			wordCoord.setPage(this.fileid);
-			
+
+			// Set Hypenation
+			if (tempWord.getHypPart1() != null) {
+				wordCoord.setHypPart1(tempWord.getHypPart1());
+			}
+			if (tempWord.getHypPart2() != null) {
+				wordCoord.setHypPart2(tempWord.getHypPart2());
+			}
+
+			// Set Article
 			DivSection currentArticle = null;
 			if ( !stackArticle.isEmpty() ) { 
 				currentArticle = stackArticle.peek();
