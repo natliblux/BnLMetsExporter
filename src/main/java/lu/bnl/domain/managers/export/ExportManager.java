@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2017-2020 Bibliothèque nationale de Luxembourg (BnL)
+ * Copyright (C) 2017-2021 Bibliothèque nationale de Luxembourg (BnL)
  *
  * This file is part of BnLMetsExporter.
  *
@@ -167,7 +167,9 @@ public abstract class ExportManager {
 		}
 
 		// START In progress: Using new ModsMdCollection handler
-		paperId = handler.getModsMdCollection().getPaperId();
+		if (handler.getModsMdCollection() != null) {
+			paperId = handler.getModsMdCollection().getPaperId();
+		}
 		// END
 
 		// Step 1 - Get metadata from current DMDSec element
