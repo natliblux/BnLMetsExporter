@@ -49,6 +49,9 @@ public class ArticleDocumentBuilder {
 	private boolean isArticle;
 	private String panel;
 	
+	private boolean isModeViewer;
+	private boolean isModeSearch;
+
 	//================================================================================
 	//================================================================================
 	
@@ -146,7 +149,17 @@ public class ArticleDocumentBuilder {
 		this.panel = panel;
 		return this;
 	}
+
+	public ArticleDocumentBuilder isModeViewer(boolean isModeViewer) {
+		this.isModeViewer = isModeViewer;
+		return this;
+	}
 	
+	public ArticleDocumentBuilder isModeSearch(boolean isModeSearch) {
+		this.isModeSearch = isModeSearch;
+		return this;
+	}
+
 	public DublinCoreDocument build() {
 		return new DublinCoreDocument(this);
 	}
@@ -232,6 +245,14 @@ public class ArticleDocumentBuilder {
 
 	public String getPanel() {
 		return panel;
+	}
+
+	public boolean isModeViewer() {
+		return isModeViewer;
+	}
+
+	public boolean isModeSearch() {
+		return isModeSearch;
 	}
 	
 	// Special and Computed

@@ -58,6 +58,16 @@ public class MetsTypeConfig {
 	 *  Default is "mods".
 	 */
 	public String preferdmd = "mods";
+
+	/** Set to true for searchable in Viewer.
+	 *  Default is true.
+	 */
+	public boolean isModeViewer = true;
+
+	/** Set to true for searchable in Full Search Mode.
+	 *  Default is true.
+	 */
+	public boolean isModeSearch = true;
 	
 	@Override
 	public String toString() {
@@ -68,6 +78,8 @@ public class MetsTypeConfig {
 				.append( String.format("IsArticle: %1$-5s , ", isArticle) )
 				.append( String.format("Prefered DMD: %1$-5s , ", preferdmd) )
 				.append( String.format("Export: %s.", export) )
+				.append( String.format("ModeViewer %b", isModeViewer) )
+				.append( String.format("ModeSearch %b", isModeSearch) )
 				.toString();
 	}
 	

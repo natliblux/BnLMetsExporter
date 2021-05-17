@@ -105,6 +105,24 @@ public class MetsTypeHandler {
 			return config.preferdmd;
 		}
 	}
+
+	public boolean isModeViewer(String typeName) {
+		MetsTypeConfig config = this.metsTypeConfigMap.get(typeName);
+		if (config == null) {
+			return false;
+		} else {
+			return config.isModeViewer;
+		}
+	}
+
+	public boolean isModeSearch(String typeName) {
+		MetsTypeConfig config = this.metsTypeConfigMap.get(typeName);
+		if (config == null) {
+			return false;
+		} else {
+			return config.isModeSearch;
+		}
+	}
 	
 	/**
 	 * Return true if the typeName is in the set of exportable types.

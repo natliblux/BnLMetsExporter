@@ -335,6 +335,8 @@ public abstract class ExportManager {
 				.languages(languages)
 				.type(type)
 				.isArticle(currentMetsTypeHandler.isArticle(type))
+				.isModeViewer(currentMetsTypeHandler.isModeViewer(type))
+				.isModeSearch(currentMetsTypeHandler.isModeSearch(type))
 				.panel(currentMetsTypeHandler.getPanel(type)); // TODO: Remove because not needed anymore
 		
 		controlBuilderQuality(builder);

@@ -443,6 +443,11 @@ public class SolrExportManager extends ExportManager {
 			logger.error(String.format("Document '%s' Failed to convert date '%s' for SolrIndex ", builder.getDocumentID(), builder.getDate()), e);
 		}
 
+		// Mode
+
+		doc.addField("mode_viewer", builder.isModeViewer());
+		doc.addField("mode_search", builder.isModeSearch());
+
 		// MARC21 Fields
 		/** What will be indexed
 		 * 	- OK Control Field 			001
