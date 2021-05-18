@@ -77,8 +77,8 @@ public class MetsTypeConfig {
 				.append( String.format("Panel: %1$-5s , ", panel) )
 				.append( String.format("IsArticle: %1$-5s , ", isArticle) )
 				.append( String.format("Prefered DMD: %1$-5s , ", preferdmd) )
-				.append( String.format("Export: %s.", export) )
-				.append( String.format("ModeViewer %b", isModeViewer) )
+				.append( String.format("Export: %s. , ", export) )
+				.append( String.format("ModeViewer %b , ", isModeViewer) )
 				.append( String.format("ModeSearch %b", isModeSearch) )
 				.toString();
 	}
