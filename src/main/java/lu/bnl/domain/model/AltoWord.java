@@ -30,6 +30,7 @@ public class AltoWord {
 	private String content;
 	private String blockId;
 	private String page;
+	private String tagRefs;
 
 	/* The content of the first part of the Hyphenation with the Hyphen, e.g. "Ge-"
 	 */
@@ -38,7 +39,9 @@ public class AltoWord {
 	/* The content of the seconf part of the Hyphentation, e.g. "nehmigung"
 	 */
 	private String hypPart2;
-	
+
+	private Integer lineBreak; // 1 = Break, 0 = no break
+
 	public void addCoord(Integer x, Integer y, Integer w, Integer h) {
 		this.x = x;
 		this.y = y;
@@ -143,6 +146,22 @@ public class AltoWord {
 	public void setHypPart2(String hypPart2) {
 		this.hypPart2 = hypPart2;
 	}
+
+	public String getTagRefs() {
+		return tagRefs;
+	}
+
+	public void setTagRefs(String tagRefs) {
+		this.tagRefs = tagRefs;
+	}
+
+	public void setLineBreak(Integer lineBreak) {
+		this.lineBreak = lineBreak;
+	}
+
+	public Integer getLineBreak() {
+		return lineBreak;
+	}
 	
 	// Custom Methods
 
@@ -154,7 +173,7 @@ public class AltoWord {
 	 */
 	public String toHTML(Boolean includePage) {
 		// TODO: REFACTOR THIS TO BE MORE BEAUTIFUL
-		String startTag = String.format("<w id=\"%s\" a=\"%s\" b=\"%s\" p=\"%s\" x=\"%d\" y=\"%d\" w=\"%d\" h=\"%d\"%s>",
+		String startTag = String.format("<w id=\"%s\" a=\"%s\" b=\"%s\" p=\"%s\" x=\"%d\" y=\"%d\" w=\"%d\" h=\"%d\" br=\"%d\"%s%s>",
 				this.getId(),
 				this.getArticle(),
 				this.getBlockId(),
@@ -163,10 +182,12 @@ public class AltoWord {
 				this.getY(),
 				this.getW(),
 				this.getH(),
-				this.getHypStringOrEmpty()
+				this.getLineBreak(),
+				this.getHypStringOrEmpty(),
+				this.getTagRefsOrEmpty()
 				);
 		if (!includePage) {
-			startTag = String.format("<w id=\"%s\" a=\"%s\" b=\"%s\" x=\"%d\" y=\"%d\" w=\"%d\" h=\"%d\"%s>",
+			startTag = String.format("<w id=\"%s\" a=\"%s\" b=\"%s\" x=\"%d\" y=\"%d\" w=\"%d\" h=\"%d\" br=\"%d\"%s%s>",
 					this.getId(),
 					this.getArticle(),
 					this.getBlockId(),
@@ -174,7 +195,9 @@ public class AltoWord {
 					this.getY(),
 					this.getW(),
 					this.getH(),
-					this.getHypStringOrEmpty()
+					this.getLineBreak(),
+					this.getHypStringOrEmpty(),
+					this.getTagRefsOrEmpty()
 					);
 		}
 		String endTag = "</w> "; // IMPORTANT TO ADD SPACE
@@ -192,6 +215,14 @@ public class AltoWord {
 			result = String.format(" hyp2=\"%s\"", this.hypPart2);
 		}
 		return result;
-	} 
+	}
+
+	private String getTagRefsOrEmpty() {
+		String result = "";
+		if (this.getTagRefs() != null) {
+			result = String.format(" ner=\"%s\"", this.getTagRefs());
+		}
+		return result;
+	}
 	
 }
