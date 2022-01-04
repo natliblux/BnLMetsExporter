@@ -288,7 +288,9 @@ public abstract class ExportManager {
 				dateString = new SimpleDateFormat("dd.MM.yyyy").format(dateObject);
 				yearString = new SimpleDateFormat("yyyy").format(dateObject);
 			} catch (ParseException e) {
-				logger.error("Failed to convert date for the alternative title for " + ark, e);
+				logger.error("[ParseException] Failed to convert date for the alternative title for " + ark, e);
+			} catch (NullPointerException e) {
+				logger.error("[NullPointerException] Failed to convert date for the alterantive title for " + ark, e);
 			}
 
 			// NEW: If Newspaper, then always use the date

@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import lu.bnl.configuration.AppConfigurationManager;
 import lu.bnl.configuration.ExportConfig;
 import lu.bnl.configuration.SolrServerConfig;
+import lu.bnl.domain.constants.MetsConstant;
 import lu.bnl.domain.managers.StatisticsManager;
 import lu.bnl.domain.managers.solr.SolrManager;
 import lu.bnl.domain.model.Alto;
@@ -45,6 +46,9 @@ import lu.bnl.domain.model.marc.MarcControlFieldDTO;
 import lu.bnl.domain.model.marc.MarcDataFieldDTO;
 import lu.bnl.domain.model.marc.MarcRecordDTO;
 import lu.bnl.domain.model.marc.MarcSubFieldDTO;
+import lu.bnl.extra.ner.NamedEntityData;
+import lu.bnl.extra.ner.NamedEntityDataManager;
+import lu.bnl.extra.ner.NamedEntityPageGroup;
 import lu.bnl.reader.MetsAltoReaderManager;
 import lu.bnl.reader.MetsGetter;
 import lu.bnl.xml.AltoXMLParserHandler;
@@ -75,6 +79,9 @@ public class SolrExportManager extends ExportManager {
 	
 	private SolrManager pageSolrManager;
 
+	// Extra Data
+	private NamedEntityDataManager namedEntityDataManager;
+
 	private static final String UNKNOWN = "unknown";
 	
 	public SolrExportManager(String dir, boolean useCloud, boolean parallel) {
@@ -97,6 +104,10 @@ public class SolrExportManager extends ExportManager {
 			this.articleSolrManager = new SolrManager(solrConfig.zkHost, solrConfig.articleCollection, useCloud);
 			this.pageSolrManager 	= new SolrManager(solrConfig.zkHost, solrConfig.pageCollection, useCloud);
 		}
+	}
+
+	public void setNamedEntityDataManager(NamedEntityDataManager namedEntityDataManager) {
+		this.namedEntityDataManager = namedEntityDataManager;
 	}
 	
 	@Override
@@ -281,6 +292,9 @@ public class SolrExportManager extends ExportManager {
 			for (Alto page : pages) {
 				AltoXMLParserHandler handlerAlto = MetsAltoReaderManager.parseAlto(page, articleAltoBlockMap, articles, useTokenizer);
 	
+				// Process Extra Data
+				this.processExtraData(documentID, articles);
+
 				// Handle Words
 				this.createDocWordsAlto(documentID, page, handlerAlto, docList);
 	
@@ -290,7 +304,13 @@ public class SolrExportManager extends ExportManager {
 			
 			// Handle Article
 			for (DivSection divSection : articles.values()) {
-				if (  !divSection.getText().isEmpty() ) {
+				// For Newspaper and Serials: Skip Empty Articles
+				// Special Case: For Top Level Elements such as Manuscript or Poster : Do not skip
+				//System.out.println(String.format("DivSection HAndle Article: %s", divSection.getType()));
+				if (  !divSection.getText().isEmpty() 
+						|| divSection.getType().equalsIgnoreCase(MetsConstant.METS_TYPE_MANUSCRIPT)
+						|| divSection.getType().equalsIgnoreCase(MetsConstant.METS_TYPE_POSTER))
+				{
 					SolrInputDocument solrDocument = this.createDocArticle(documentID, divSection, handler);
 					
 					// Add the lines for this article
@@ -322,7 +342,7 @@ public class SolrExportManager extends ExportManager {
 		doc.addField("pid", 	documentID);
 		doc.addField("page", 	pageId);
 		
-		addIfNotEmpty(doc, "text_lines",	handlerAlto.getPageFullTextLines());
+		addIfNotEmpty(doc, "text_lines",	handlerAlto.getPageFullTextLines());  // DEPRECATED
 		addIfNotEmpty(doc, "text_words",	this.createTextWordData(documentID, page, handlerAlto));
 		
 		docList.altoPages.add(doc);
@@ -405,6 +425,11 @@ public class SolrExportManager extends ExportManager {
 	private SolrInputDocument createDocArticle(String documentID , DivSection article, MetsXMLParserHandler handler) {
 		SolrInputDocument doc = new SolrInputDocument();
 		
+		// TODO: Use NamedEntityDataManager to enhance the data before further processing
+		if (this.namedEntityDataManager != null) {
+			
+		}
+
 		ArticleDocumentBuilder builder = ExportManager.getArticleDocumentBuilder(documentID, article, handler);
 
 		String routePrefix = String.format("%s!", builder.getDocumentID());
@@ -418,7 +443,7 @@ public class SolrExportManager extends ExportManager {
 		
 		addIfNotEmpty(doc, "title",   		builder.getTitle());
 		addIfNotEmpty(doc, "text_words",	builder.getWordText());
-		addIfNotEmpty(doc, "text_lines",	builder.getLineText());
+		addIfNotEmpty(doc, "text_lines",	builder.getLineText()); // DEPRECATED
 		
 		addIfNotEmpty(doc, "date", 			builder.getDate());
 		addIfNotEmpty(doc, "publisher", 	builder.getPublisher());
@@ -428,7 +453,7 @@ public class SolrExportManager extends ExportManager {
 		doc.addField("lang",    			builder.getLanguages());
 		doc.addField("ispartofs",  			builder.getIsPartOfs());
 
-		// New Fields
+		doc.addField("int_wordCount", 		builder.getWordCount());
 
 		doc.addField("document_type", 		builder.getDocumentType().toLowerCase());
 		addIfNotEmpty(doc, "collection", 	builder.getPaperId());
@@ -440,7 +465,9 @@ public class SolrExportManager extends ExportManager {
 			// If the above worked, we can safely create the Solr date
 			doc.addField("date_document", formatter.format(dateObject) + "T00:00:00.000Z");
 		} catch (ParseException e) {
-			logger.error(String.format("Document '%s' Failed to convert date '%s' for SolrIndex ", builder.getDocumentID(), builder.getDate()), e);
+			logger.error(String.format("[ParseException] Document '%s' Failed to convert date '%s' for SolrIndex ", builder.getDocumentID(), builder.getDate()), e);
+		} catch (NullPointerException e) {
+			logger.error(String.format("[NullPointerException] Document '%s' does not have a date for SolrIndex ", builder.getDocumentID()), e);
 		}
 
 		// Mode
@@ -462,119 +489,175 @@ public class SolrExportManager extends ExportManager {
 
 		MarcRecordDTO marcRecord = handler.getMarcRecord();
 		if (marcRecord != null) {
-
 		
 			String controlField_001 = null;
-			for (MarcControlFieldDTO controlField : marcRecord.getControlFields()) {
-				if (controlField.getTag().equalsIgnoreCase("001")) {
-					controlField_001 = controlField.getContent();
-					doc.addField("MARC21_controlfield_001", controlField_001);
-				}
-			} // end for MarcControlFieldDTO
+			if (marcRecord.getControlFields() != null) {
+				for (MarcControlFieldDTO controlField : marcRecord.getControlFields()) {
+					if (controlField.getTag().equalsIgnoreCase("001")) {
+						controlField_001 = controlField.getContent();
+						doc.addField("MARC21_controlfield_001", controlField_001);
+					}
+				} // end for MarcControlFieldDTO
+			} // end if getControlFields not null
 
-			for (MarcDataFieldDTO dataField : marcRecord.getDataFields()) {
+			if (marcRecord.getDataFields() != null) {
+				for (MarcDataFieldDTO dataField : marcRecord.getDataFields()) {
 
-				System.out.println(dataField.getTag());
+					System.out.println(dataField.getTag());
 
-				if (dataField.getTag().equalsIgnoreCase("100")) {
-					// Author 				100 $a : $b / $c
-					Map<String, List<String>> mapping = createMapping("a", UNKNOWN);
-					processMarcField(dataField, mapping);
+					if (dataField.getTag().equalsIgnoreCase("100")) {
+						// Author 				100 $a : $b / $c
+						Map<String, List<String>> mapping = createMapping("a", UNKNOWN);
+						processMarcField(dataField, mapping);
 
-					String text = String.join(" ", new String[]{
-						String.join(" ", mapping.get("a")),
-						String.join(" ", mapping.get(UNKNOWN))
-					});
+						String text = String.join(" ", new String[]{
+							String.join(" ", mapping.get("a")),
+							String.join(" ", mapping.get(UNKNOWN))
+						});
 
-					doc.addField("MARC21_datafield_100", text);
-				}
+						doc.addField("MARC21_datafield_100", text);
+					}
 
-				if (dataField.getTag().equalsIgnoreCase("245")) {
-					// Title 				245 $a : $b / $c
-					Map<String, List<String>> mapping = createMapping("a", "b", "c", UNKNOWN);
-					processMarcField(dataField, mapping);
+					if (dataField.getTag().equalsIgnoreCase("245")) {
+						// Title 				245 $a : $b / $c
+						Map<String, List<String>> mapping = createMapping("a", "b", "c", UNKNOWN);
+						processMarcField(dataField, mapping);
 
-					String text = String.join(" ", new String[]{
-						String.join(" ", mapping.get("a")),
-						mapping.get("b").size() > 0 ? String.format(": %s", String.join(" ", mapping.get("b"))) : "",
-						mapping.get("c").size() > 0 ? String.format("/ %s", String.join(" ", mapping.get("c"))) : "",
-					});
+						String text = String.join(" ", new String[]{
+							String.join(" ", mapping.get("a")),
+							mapping.get("b").size() > 0 ? String.format(": %s", String.join(" ", mapping.get("b"))) : "",
+							mapping.get("c").size() > 0 ? String.format("/ %s", String.join(" ", mapping.get("c"))) : "",
+						});
 
-					doc.addField("MARC21_datafield_245", text);
-				}
+						doc.addField("MARC21_datafield_245", text);
+					}
 
-				if (dataField.getTag().equalsIgnoreCase("260")) {
-					// BibliographicAddress 	260 $a : $b, $c
-					Map<String, List<String>> mapping = createMapping("a", "b", "c", UNKNOWN);
-					processMarcField(dataField, mapping);
+					if (dataField.getTag().equalsIgnoreCase("260")) {
+						// BibliographicAddress 	260 $a : $b, $c
+						Map<String, List<String>> mapping = createMapping("a", "b", "c", UNKNOWN);
+						processMarcField(dataField, mapping);
 
-					String text = String.join(" ", new String[]{
-						String.join(" ", mapping.get("a")),
-						mapping.get("b").size() > 0 ? String.format(": %s", String.join(" ", mapping.get("b"))) : "",
-						mapping.get("c").size() > 0 ? String.format(", %s", String.join(" ", mapping.get("c"))) : "",
-					});
+						String text = String.join(" ", new String[]{
+							String.join(" ", mapping.get("a")),
+							mapping.get("b").size() > 0 ? String.format(": %s", String.join(" ", mapping.get("b"))) : "",
+							mapping.get("c").size() > 0 ? String.format(", %s", String.join(" ", mapping.get("c"))) : "",
+						});
 
-					doc.addField("MARC21_datafield_260", text);
-				}
+						doc.addField("MARC21_datafield_260", text);
+					}
 
-				if (dataField.getTag().equalsIgnoreCase("300")) {
-					// PhysicalDescription 	300 $a : $b
-					Map<String, List<String>> mapping = createMapping("a", "b", UNKNOWN);
-					processMarcField(dataField, mapping);
+					if (dataField.getTag().equalsIgnoreCase("300")) {
+						// PhysicalDescription 	300 $a : $b
+						Map<String, List<String>> mapping = createMapping("a", "b", UNKNOWN);
+						processMarcField(dataField, mapping);
 
-					String text = String.join(" ", new String[]{
-						String.join(" ", mapping.get("a")),
-						mapping.get("b").size() > 0 ? String.format(": %s", String.join(" ", mapping.get("b"))) : ""
-					});
+						String text = String.join(" ", new String[]{
+							String.join(" ", mapping.get("a")),
+							mapping.get("b").size() > 0 ? String.format(": %s", String.join(" ", mapping.get("b"))) : ""
+						});
 
-					doc.addField("MARC21_datafield_300", text);
-				}
+						doc.addField("MARC21_datafield_300", text);
+					}
 
-				// NO NEED TO INDEX THOSE FIELDS
-				/*if (dataField.getTag().equalsIgnoreCase("852")) {
-					// Fond 					852 $b - $d
-					Map<String, List<String>> mapping = createMapping("b", "d", UNKNOWN);
-					processMarcField(dataField, mapping);
+					// NO NEED TO INDEX THOSE FIELDS
+					/*if (dataField.getTag().equalsIgnoreCase("852")) {
+						// Fond 					852 $b - $d
+						Map<String, List<String>> mapping = createMapping("b", "d", UNKNOWN);
+						processMarcField(dataField, mapping);
 
-					String text = String.join(" ", new String[]{
-						String.join(" ", mapping.get("b")),
-						mapping.get("d").size() > 0 ? String.format("- %s", String.join(" ", mapping.get("d"))) : ""
-					});
+						String text = String.join(" ", new String[]{
+							String.join(" ", mapping.get("b")),
+							mapping.get("d").size() > 0 ? String.format("- %s", String.join(" ", mapping.get("d"))) : ""
+						});
 
-					doc.addField("MARC21_datafield_852", text);
-				}*/
+						doc.addField("MARC21_datafield_852", text);
+					}*/
 
-				/*if (dataField.getTag().equalsIgnoreCase("949")) {
-					// Archives 				949 $0 - $j
-					Map<String, List<String>> mapping = createMapping("0", "j", UNKNOWN);
-					processMarcField(dataField, mapping);
+					/*if (dataField.getTag().equalsIgnoreCase("949")) {
+						// Archives 				949 $0 - $j
+						Map<String, List<String>> mapping = createMapping("0", "j", UNKNOWN);
+						processMarcField(dataField, mapping);
 
-					String text = String.join(" ", new String[]{
-						String.join(" ", mapping.get("0")),
-						mapping.get("j").size() > 0 ? String.format("- %s", String.join(" ", mapping.get("j"))) : ""
-					});
+						String text = String.join(" ", new String[]{
+							String.join(" ", mapping.get("0")),
+							mapping.get("j").size() > 0 ? String.format("- %s", String.join(" ", mapping.get("j"))) : ""
+						});
 
-					doc.addField("MARC21_datafield_300", text);
-				}*/
+						doc.addField("MARC21_datafield_300", text);
+					}*/
 
-				/*if (dataField.getTag().equalsIgnoreCase("DRL") && controlField_001 != null) {
-					// CatalogueLink 		DRL $a
-					Map<String, List<String>> mapping = createMapping("a", UNKNOWN);
-					processMarcField(dataField, mapping);
+					/*if (dataField.getTag().equalsIgnoreCase("DRL") && controlField_001 != null) {
+						// CatalogueLink 		DRL $a
+						Map<String, List<String>> mapping = createMapping("a", UNKNOWN);
+						processMarcField(dataField, mapping);
 
-					String text = String.join(" ", new String[]{
-						String.join(" ", mapping.get("a"))
-					});
+						String text = String.join(" ", new String[]{
+							String.join(" ", mapping.get("a"))
+						});
 
-					doc.addField("MARC21_datafield_DRL", text);
-				}*/
-				
-			} // end for MarcDataFieldDTO
-		} // end marcRecord no null
+						doc.addField("MARC21_datafield_DRL", text);
+					}*/
+					
+				} // end for MarcDataFieldDTO
+			} // end if getDataFields not null
+		} // end marcRecord not null
+
+		// Named Entities
+		// TODO: 1) Index Entities in their correct fields
+		// TODO: 2) Index Entities in the words
+		// End Named Entities
 
 		//doc.addField("reference", "issue:"+issue_title+"/article:"+dmdid);
 		
 		return doc;
+	}
+
+	private void processExtraData(String documentID, Map<String, DivSection> articles) {
+		if (this.namedEntityDataManager == null) {
+			return;
+		}
+
+		System.out.println("Getting Named Entites for Document ID " + documentID);
+		NamedEntityPageGroup namedEntityPageGroup = this.namedEntityDataManager.getArkToPageGroupMap().get(documentID);
+
+		for (DivSection article : articles.values()) {
+			String altoId = article.getFileid();
+			System.out.println("FILEID: " + article.getFileid());
+			if (namedEntityPageGroup.getAltoToStringToEntityMap().containsKey(altoId)) {
+				Map<String, List<NamedEntityData>> stringToEntityMap = namedEntityPageGroup.getAltoToStringToEntityMap().get(altoId);
+
+				// 1) Iterate over words and update each one if necessary
+				// 2) When word is updated, then also store the entity in the article
+
+				// 1)
+				for (AltoWord word : article.getWords()) {
+					// Should this word have an Entity?
+					if (stringToEntityMap.containsKey(word.getId())) {
+						List<NamedEntityData> entities = stringToEntityMap.get(word.getId());
+						List<String> tagRefList = new ArrayList<>();
+						for (NamedEntityData entity : entities) {
+							Integer id = null;
+							if (entity.primaryId != null) id = entity.primaryId;
+							if (entity.secondaryId != null) id = entity.secondaryId;
+
+							if (id != null) {
+								// Word-Level
+								tagRefList.add(id.toString());
+
+								// Article-Level
+								article.getEntities().add(id);
+								if (entity.type.equalsIgnoreCase("PERSON")) article.getEntitiesPersons().add(id);
+								if (entity.type.equalsIgnoreCase("LOCATION")) article.getEntitiesLocations().add(id);
+								if (entity.type.equalsIgnoreCase("ORGANISATION")) article.getEntitiesOrganisations().add(id);
+							}
+						}
+						word.setTagRefs( String.join(";", tagRefList) );
+					}
+				}
+
+			}
+		}
+
 	}
 
 	private void addIfNotEmpty(SolrInputDocument doc, String key, String value) {
