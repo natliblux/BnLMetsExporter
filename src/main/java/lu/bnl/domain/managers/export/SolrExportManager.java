@@ -338,7 +338,10 @@ public class SolrExportManager extends ExportManager {
 		
 		String routePrefix = String.format("%s!", documentID);
 		
-		doc.addField("id", 		String.format("%s%s_%s", routePrefix, documentID, pageId));
+		String id_solrfriendly = String.format("%s%s_%s", routePrefix, documentID, pageId);
+		id_solrfriendly = id_solrfriendly.replace("/", "-");
+
+		doc.addField("id", 		id_solrfriendly);
 		doc.addField("pid", 	documentID);
 		doc.addField("page", 	pageId);
 		
@@ -362,15 +365,24 @@ public class SolrExportManager extends ExportManager {
 			
 			String routePrefix = String.format("%s!", documentID);
 			
+			String id_solrfriendly = null;
+			
+
 			if ( altoWord.getId() != null ) {
-				doc.addField("id", String.format("%s%s_%s_%s", 
-						routePrefix, documentID, pageId, altoWord.getId()));
+				/*doc.addField("id", String.format("%s%s_%s_%s", 
+						routePrefix, documentID, pageId, altoWord.getId()));*/
+				id_solrfriendly = String.format("%s%s_%s_%s", routePrefix, documentID, pageId, altoWord.getId());
 			} else {
 				// Use coordinates as unique key, because if manual tokenizer, we can have multiple token with same id.
-				doc.addField("id", String.format("%s%s_%s_%d_%d_%d_%d", 
-						routePrefix, documentID, pageId, altoWord.getX(), altoWord.getY(), altoWord.getW(), altoWord.getH())); 
+				/*doc.addField("id", String.format("%s%s_%s_%d_%d_%d_%d", 
+						routePrefix, documentID, pageId, altoWord.getX(), altoWord.getY(), altoWord.getW(), altoWord.getH())); */
+				id_solrfriendly = String.format("%s%s_%s_%d_%d_%d_%d", routePrefix, documentID, pageId, altoWord.getX(), altoWord.getY(), altoWord.getW(), altoWord.getH());
 			}
 
+			id_solrfriendly = id_solrfriendly.replace("/", "-");
+
+			doc.addField("id", id_solrfriendly);
+			
 			doc.addField("pid", documentID);
 			doc.addField("article", altoWord.getArticle());
 			
@@ -434,7 +446,10 @@ public class SolrExportManager extends ExportManager {
 
 		String routePrefix = String.format("%s!", builder.getDocumentID());
 		
-		doc.addField("id", 					String.format("%s%s_%s_%s", routePrefix, builder.getDocumentID(), builder.getDmdId(), builder.getId()));
+		String id_solrfriendly = String.format("%s%s_%s_%s", routePrefix, builder.getDocumentID(), builder.getDmdId(), builder.getId());
+		id_solrfriendly = id_solrfriendly.replace("/", "-");
+
+		doc.addField("id", 					id_solrfriendly);
 		
 		doc.addField("article", 			builder.getDmdId());
 		doc.addField("pid", 				builder.getDocumentID());
