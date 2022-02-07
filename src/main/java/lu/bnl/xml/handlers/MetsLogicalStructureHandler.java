@@ -169,7 +169,9 @@ public class MetsLogicalStructureHandler extends DefaultHandler {
 					this.detectExportType(type);
 					
 				// Else, check if we have to handle
-				} else if ( this.metsTypeHandler.contains(type) ) {
+				} 
+				// TRY: Always check if we have to handle it
+				if ( this.metsTypeHandler.contains(type) ) {
 					DivSection article = new DivSection(id, dmdid, label, type); // create new article and push on stack
 					
 					if (this.articles.containsKey(id)) {

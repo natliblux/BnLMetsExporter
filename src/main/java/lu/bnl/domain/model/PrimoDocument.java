@@ -27,7 +27,6 @@ import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 import com.thoughtworks.xstream.annotations.XStreamOmitField;
 
 import lu.bnl.configuration.AppConfigurationManager;
-import lu.bnl.util.ArkUtils;
 
 /*
  * <OAI-PMH 

@@ -183,11 +183,10 @@
   <dynamicField name="random_*" type="random" indexed="true" stored="false"/>
 
   <!-- NO STEMMING fields -->
-  <dynamicField name="NOSTEM_*" type="text_primo_no_stem" indexed="true" stored="true" />
+  <dynamicField name="NOSTEM_*"   type="text_primo_no_stem" indexed="true" stored="true" />
 
   <copyField source="title"       dest="NOSTEM_title" />
   <copyField source="text_words"  dest="NOSTEM_words" />
-  <copyField source="MARC21_*"    dest="NOSTEM_anything" />
 
   <!-- Other -->
   <dynamicField name="int_*" type="int"     indexed="true" stored="true" />

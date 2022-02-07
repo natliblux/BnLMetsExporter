@@ -92,6 +92,34 @@ public class AltoXMLParserHandler extends DefaultHandler {
 	
 	private Boolean didFindHyphen = false;
 	
+	private AltoWord lastWordCoord = null; // Explanation below:
+	/*
+
+	Sequence of parsing is
+
+	TextBlock 		=> 		TextLine 		=> 		String/SP/HYP
+	<br>					<br>					-
+
+	a) At the end of TextBlock or TextLine, set br to 1 for the last word
+	b) Use TB change of ID to add space, use start of TL to add br to the 
+
+	TB
+		TL 			NOTHING
+			ST
+			ST
+		TL 			SET BR to 1 of the last ST
+			ST
+			ST
+		TL 			SET BR to 1 of the last ST
+	TB
+		TL 			NOTHING
+			ST
+			ST
+
+	*/
+
+
+
 	//private Boolean DEBUG_isInDummyArticle = false; // For debugging words landing in the dummy article
 	
 	// Flag to track if we are in a TextBlock that is part of an exportable element.
@@ -245,6 +273,9 @@ public class AltoXMLParserHandler extends DefaultHandler {
 		}
 		
 		stackArticle.add(article);
+
+		// Reset the last wordCoord
+		lastWordCoord = null;
 	}
 
 	private void handleTextBlockEnd(String uri, String localName, String qName) {
@@ -321,6 +352,11 @@ public class AltoXMLParserHandler extends DefaultHandler {
 		}
 		
 		this.didFindHyphen = false;
+
+		// Break if needed for AltoWord
+		if (lastWordCoord != null) {
+			lastWordCoord.setLineBreak(1);
+		}
 	}
 	
 	private void handleString(String uri, String localName, String qName, Attributes attributes) {
@@ -432,6 +468,7 @@ public class AltoXMLParserHandler extends DefaultHandler {
 			wordCoord = addToIndex(contentForLine, x, y, w, h, id, tempWord);
 			consecutiveTags.add(wordCoord);
 		}
+		lastWordCoord = wordCoord;
 		
 		boolean isConsecutive = (AltoConstant.TAG_STRING.equalsIgnoreCase(previousSiblingTag));
 		
@@ -517,6 +554,7 @@ public class AltoXMLParserHandler extends DefaultHandler {
 			wordCoord.setText(text);
 			wordCoord.addCoord(x, y, w, h);
 			wordCoord.setPage(this.fileid);
+			wordCoord.setLineBreak(0); // Set default to 0 (no line break)
 
 			// Set Hypenation
 			if (tempWord.getHypPart1() != null) {
