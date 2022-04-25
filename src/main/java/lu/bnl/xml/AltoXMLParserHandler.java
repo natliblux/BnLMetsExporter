@@ -379,10 +379,20 @@ public class AltoXMLParserHandler extends DefaultHandler {
 		
 		String contentForLine 	= content;
 
-		Integer y = integer(attributes.getValue( AltoConstant.ATTR_STRING_VPOS ));
+		Float fy = toFloat(attributes.getValue( AltoConstant.ATTR_STRING_VPOS ));
+		Float fx = toFloat(attributes.getValue( AltoConstant.ATTR_STRING_HPOS ));
+		Float fw = toFloat(attributes.getValue( AltoConstant.ATTR_STRING_WIDTH ));
+		Float fh = toFloat(attributes.getValue( AltoConstant.ATTR_STRING_HEIGHT ));
+		
+		Integer y = (int) Math.floor(fy);
+		Integer x = (int) Math.floor(fx);
+		Integer w = (int) Math.ceil(fw);
+		Integer h = (int) Math.ceil(fh);
+
+		/*Integer y = integer(attributes.getValue( AltoConstant.ATTR_STRING_VPOS ));
 		Integer x = integer(attributes.getValue( AltoConstant.ATTR_STRING_HPOS ));
 		Integer w = integer(attributes.getValue( AltoConstant.ATTR_STRING_WIDTH ));
-		Integer h = integer(attributes.getValue( AltoConstant.ATTR_STRING_HEIGHT ));
+		Integer h = integer(attributes.getValue( AltoConstant.ATTR_STRING_HEIGHT ));*/
 		
 		// Example: <String ID="P1_ST02164" HPOS="3823" VPOS="1897" WIDTH="33" HEIGHT="27" CONTENT="Ge" SUBS_TYPE="HypPart1" SUBS_CONTENT="Gewissensfreiheit" WC="0.49" CC="761"/>
 		
@@ -594,6 +604,16 @@ public class AltoXMLParserHandler extends DefaultHandler {
 			//
 		}
 		return i;
+	}
+
+	private float toFloat(String value) {
+		Float f = null;
+		try {
+			f = Float.parseFloat(value);
+		} catch (NumberFormatException e) {
+
+		}
+		return f;
 	}
 	
 	//================================================================================

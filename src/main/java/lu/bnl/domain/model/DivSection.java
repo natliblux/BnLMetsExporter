@@ -47,9 +47,9 @@ public class DivSection {
 		this.label = label;
 		this.type = type;
 		
-		blocks = new LinkedHashMap<>();
-		blocksForLines = new LinkedHashMap<>();
-		words = new ArrayList<>();
+		this.blocks 			= new LinkedHashMap<>();
+		this.blocksForLines 	= new LinkedHashMap<>();
+		this.words 				= new ArrayList<>();
 	}
 
 	/** Returns all blocks as one standard string. Blocks are concatenated by space.
@@ -207,9 +207,5 @@ public class DivSection {
 		return true;
 	}
 
-
-	
-	
-	
 	
 }
